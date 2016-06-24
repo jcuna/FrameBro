@@ -1,0 +1,9 @@
+<?php
+
+define('ABSOLUTE_PATH', getcwd());
+
+require ABSOLUTE_PATH . '/app/libraries/globals.php';
+require ABSOLUTE_PATH . '/app/config/config.php';
+require ABSOLUTE_PATH . '/app/core/autoload.php';
+
+new \App\Core\Cli($argv);

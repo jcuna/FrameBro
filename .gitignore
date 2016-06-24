@@ -1,0 +1,10 @@
+.DS_Store*
+.appdisk
+._.DS_Store*
+.localized
+._*
+*/images/*
+.idea
+vendor
+composer.lock
+.env

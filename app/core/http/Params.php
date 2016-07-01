@@ -239,7 +239,7 @@ class Params
     {
         $bool = false;
 
-        if (isset($this->request{$key})) {
+        if (isset($this->request->{$key})) {
             $bool = true;
         }
 

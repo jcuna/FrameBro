@@ -98,7 +98,17 @@ i.e
 
 ~~~~~~~~~~~~~~~~~~~~~~~
 $params = new Params();
-$id = $params->id
+// Using magic getters
+$id = $params->id;
+//is the same as
+$id = $params->get("id");
+
+// More available methods include
+$params->has("id");
+$params->hasFile("fileName");
+$params->hasAjax();
+$params->toArray();
+
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 $id is now an argument sent via a POST or a GET request. If data sent is JSON data, it gets decoded automatically.

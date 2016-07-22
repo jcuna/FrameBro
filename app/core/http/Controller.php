@@ -52,11 +52,12 @@ class Controller {
             }
         }
     }
-
+    
     /**
      * @param $name
      * @param $arguments
-     * @throws \App\Core\Exceptions\ViewException
+     * @return mixed|string|void
+     * @throws ControllerException
      */
     public function __call($name, $arguments)
     {

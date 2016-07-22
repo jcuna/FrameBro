@@ -7,6 +7,7 @@ namespace App\Core;
 
 use App\Core\Ajax\AjaxController;
 use App\Core\Exceptions\AppException;
+use App\Core\Http\Params;
 use App\Core\Http\Routes;
 use App\Core\Api\BroExceptionsInterface;
 
@@ -16,6 +17,11 @@ use App\Core\Api\BroExceptionsInterface;
  */
 class App {
 
+    /**
+     * The type of application caller
+     *
+     * @var string
+     */
 	private $caller;
 
 	/**
@@ -40,15 +46,31 @@ class App {
      */
     private function routeRequest()
     {
-        //if it's a web request not a cli request.
+        //if it's a web request
         if ($this->caller === 'WEB') {
 
             try {
 
                 $routes = new Routes();
 
+                if ($routes->parseRoutes()) {
+                    if ($routes->controller === 'callable') {
+                        $routes->arguments = $routes->arUri ? array_values($routes->arUri) : array();
+                        return call_user_func_array($routes->action, $routes->arguments);
+                    } elseif ($routes->validateRoutes()) {
+
+                        return $this->fireApp($routes);
+
+                    } else {
+                        throw new AppException('Your routes file could not be validated');
+                    }
+                }
+
+                return $routes->callMissingPage();
+
             } catch ( \Exception $e ) {
                 log_exception($e);
+
                 if ( getenv('ENV') === 'dev' || getenv('ENV') === false ) {
 
                     if (AjaxController::ajaxCallInProgress()) {
@@ -62,24 +84,9 @@ class App {
                 }
                 exit;
             }
-
-            if ($routes->parseRoutes()) {
-                if ($routes->controller === 'callable') {
-                    $routes->arguments = $routes->arUri ? array_values($routes->arUri) : array();
-                    return call_user_func_array($routes->action, $routes->arguments);
-                } elseif ($routes->validateRoutes()) {
-
-                    return $this->fireApp($routes);
-
-                } else {
-                    throw new AppException('Your routes file could not be validated');
-                }
-            }
         }
-
-        return $routes->callMissingPage();
+        return null;
     }
-
 
 
 	/**
@@ -93,7 +100,7 @@ class App {
 		try {
             $routes->arguments = $routes->arUri ? array_values($routes->arUri) : array();
             $action = $routes->action . '{action}';
-			return call_user_func_array( array( $routes->controller, $action) , $routes->arguments );
+			return call_user_func_array( array( $routes->controller, $action), $routes->arguments );
 
 		} catch ( \Exception $e ) {
             log_exception($e);

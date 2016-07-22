@@ -13,6 +13,13 @@ class DatabaseManager extends \PDO
 {
 
     /**
+     * The parent PDO 
+     * 
+     * @var \PDO
+     */
+    private $PDO;
+
+    /**
      * DatabaseManager constructor.
      * @param $dsn
      * @param $username
@@ -21,7 +28,7 @@ class DatabaseManager extends \PDO
      */
     public function __construct($dsn, $username, $password, $options)
     {
-        parent::__construct($dsn, $username, $password, $options);
+        $this->PDO = parent::__construct($dsn, $username, $password, $options);
     }
 
     /**
@@ -76,4 +83,13 @@ class DatabaseManager extends \PDO
         return $result;
     }
 
+    /**
+     * Return PDO connection 
+     * 
+     * @return \PDO
+     */
+    public function getPdo()
+    {
+        return $this->PDO;
+    }
 }

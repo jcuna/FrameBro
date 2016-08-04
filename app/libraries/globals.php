@@ -7,6 +7,12 @@
 //vendor autoloading
 require ABSOLUTE_PATH . '/vendor/autoload.php';
 
+/** Start dotenv instance */
+if (file_exists(ABSOLUTE_PATH . '/.env')) {
+    $dotenv = new Dotenv\Dotenv( ABSOLUTE_PATH );
+    $dotenv->load();
+}
+
 /**
  * @overrides ddd by Kint in case there's an ajax call.
  *
@@ -42,11 +48,6 @@ function ddd() {
 function dd() {
     $args = func_get_args();
     ddd($args);
-}
-
-if (file_exists(ABSOLUTE_PATH . '/.env')) {
-    $dotenv = new Dotenv\Dotenv( ABSOLUTE_PATH );
-    $dotenv->load();
 }
 
 /**

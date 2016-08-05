@@ -13,30 +13,45 @@ namespace App\Core;
 class Interpreter
 {
     /**
-     * @var Interpreter The reference to *Singleton* instance of this class
+     * @var Interpreter reference to singleton instance of this class
      */
     private static $instance;
 
-    protected static $viewPatterns = array(
+    /**
+     * @var array
+     */
+    protected static $viewPatterns = [
         "/@partial\([\"'](.*|.*)['\"]\)/",
         '/@render_feedback@/'
-    );
+    ];
 
-    protected static $viewReplacements = array(
+    /**
+     * @var array
+     */
+    protected static $viewReplacements = [
         '<?php include "$1" ?>',
         '<?php self::renderFeedbackMessages(); ?>'
-    );
+    ];
 
-    protected static $layoutPatterns = array(
+    /**
+     * @var array
+     */
+    protected static $layoutPatterns = [
         '/@header_includes@/',
         '/@render_feedback@/'
-    );
+    ];
 
-    protected static $layoutReplacements = array(
+    /**
+     * @var array
+     */
+    protected static $layoutReplacements = [
         '<?php require_once(CORE_PATH . "view_helpers/bro.settings.php"); ?>',
         '<?php self::renderFeedbackMessages(); ?>'
-    );
+    ];
 
+    /**
+     * @var array
+     */
     protected static $viewPartials;
 
     /**
@@ -54,16 +69,15 @@ class Interpreter
     }
 
     /**
-     * Returns the *Singleton* instance of this class.
-     * @return Interpreter The *Singleton* instance.
+     * Setup object if not yet setup
+     * 
+     * @return Interpreter
      */
-    private static function getInstance()
+    private static function bootIfNotBooted()
     {
-        if (null === static::$instance) {
+        if (is_null(static::$instance)) {
             static::$instance = new static();
         }
-
-        return static::$instance;
     }
 
     /**
@@ -76,22 +90,23 @@ class Interpreter
      */
     public static function extendInterpreter($pattern, $replacement, $class = false )
     {
-        if ( $class ) {
+        if ($class) {
             $pattern = "/$pattern::/";
             $replacement = "$replacement::";
         } else {
             $pattern = "/$pattern/";
             $replacement = "$replacement";
         }
-        $instance = self::getInstance();
+        
+        self::bootIfNotBooted();
 
-        if(($key = array_search($pattern, $instance::$viewPatterns)) !== false) {
-            unset($instance::$viewPatterns[$key]);
-            unset($instance::$viewReplacements[$key]);
+        if(($key = array_search($pattern, self::$viewPatterns)) !== false) {
+            unset(static::$viewPatterns[$key]);
+            unset(static::$viewReplacements[$key]);
         }
 
-        $instance::$viewPatterns[] = $pattern;
-        $instance::$viewReplacements[] = $replacement;
+        self::$viewPatterns[] = $pattern;
+        self::$viewReplacements[] = $replacement;
     }
 
     /**
@@ -102,14 +117,14 @@ class Interpreter
      */
     public static function parseView($file, $ajax = false)
     {
-        $instance = self::getInstance();
+        self::bootIfNotBooted();
 
         if ( $ajax ) {
             $prepend = "@render_feedback@";
             $file = "$prepend\n" . $file;
         }
 
-        return preg_replace($instance::$viewPatterns, $instance::$viewReplacements, $file);
+        return preg_replace(self::$viewPatterns, self::$viewReplacements, $file);
     }
 
     /**
@@ -119,12 +134,11 @@ class Interpreter
      * @return string parsed file;
      */
     public static function parseLayout($file, $yield ) {
-        $instance = self::getInstance();
-        $instance::$layoutPatterns[] = '/@yield/';
-        $instance::$layoutReplacements[] = $yield ;
+        self::bootIfNotBooted();
+        self::$layoutPatterns[] = '/@yield/';
+        self::$layoutReplacements[] = $yield ;
 
-        return preg_replace( $instance::$layoutPatterns, $instance::$layoutReplacements, $file );
-
+        return preg_replace( self::$layoutPatterns, self::$layoutReplacements, $file );
     }
 
     /**
@@ -132,11 +146,11 @@ class Interpreter
      * @return bool
      */
     public static function hasPartials($file) {
-        $instance = self::getInstance();
-        $instance::$viewPartials = array();
+        self::bootIfNotBooted();
+        self::$viewPartials = [];
         if (preg_match_all( "/@partial\([\"'](.*|.*)['\"]\)/", $file, $matches)) {
             foreach ( $matches[1] as $match ) {
-                $instance::$viewPartials[] = str_replace('.', '/', $match);
+                self::$viewPartials[] = str_replace('.', '/', $match);
             }
             return true;
         }
@@ -148,7 +162,6 @@ class Interpreter
      * @return array
      */
     public static function getPartials() {
-        $instance = self::getInstance();
-        return $instance::$viewPartials;
+        return self::$viewPartials;
     }
 }

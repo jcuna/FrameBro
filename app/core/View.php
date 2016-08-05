@@ -40,11 +40,13 @@ class View extends AbstractView
 
     /**
      * Fires the proper view render method based on type of call.
-     *
+     * 
      * @param null $view
      * @param array $data
      * @param int $responseCode
+     * @return string
      * @throws ViewException
+     * @throws \Exception
      */
     public static function render( $view = null, $data = array(), $responseCode = 200 )
     {
@@ -75,8 +77,7 @@ class View extends AbstractView
             self::init();
             self::includeView( $view, $data );
             exit;
-        }
-        else {
+        } else {
             if (strpos($view, '.php') > 0 ) {
                 throw new ViewException('A view name cannot have a .php extension when called with View::render');
             } else {
@@ -88,8 +89,9 @@ class View extends AbstractView
     /**
      * @param $view
      * @param array $data
-     * @return string
+     * @return mixed
      * @throws ViewException
+     * @throws \Exception
      */
     private static function renderAjax($view, $data = array()) {
 

@@ -15,8 +15,6 @@ if (file_exists(ABSOLUTE_PATH . '/.env')) {
 
 /**
  * @overrides ddd by Kint in case there's an ajax call.
- *
- * @param $dumpData
  */
 function ddd() {
 

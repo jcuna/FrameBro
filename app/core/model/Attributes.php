@@ -16,7 +16,7 @@ class Attributes implements \IteratorAggregate
 
     /**
      * Attributes constructor.
-     * @param null $arAttributes
+     * @param array $arAttributes
      */
     public function __construct(array $arAttributes = [])
     {

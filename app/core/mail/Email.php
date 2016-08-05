@@ -180,7 +180,7 @@ class Email
     /**
      * @param $returnPath
      */
-    public function setReturnPath($returnPath)
+    public function addReturnPath($returnPath)
     {
         $this->returnPath = $returnPath;
     }

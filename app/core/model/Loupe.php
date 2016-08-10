@@ -6,6 +6,7 @@
 
 namespace App\Core\Model;
 
+use App\Core\Api\Arrayable;
 use App\Core\Api\DatabaseAccessInterface;
 use App\Core\Api\ModelInterface;
 use App\Core\Cache\Cache;
@@ -21,7 +22,7 @@ use App\Libraries\Inflect;
  * Class Loupe
  * @package App\Core\Model
  */
-abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \IteratorAggregate
+abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \IteratorAggregate, Arrayable
 {
     /**
      * The attributes object containing all properties of the model.

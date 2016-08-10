@@ -54,14 +54,12 @@ class adminController extends Controller
     }
 
     /**
-     * @param $params
      * @return string
-     * @throws \Exception
      */
     public function deleteFiles( ) {
         $params = new Params();
         $params = $params->all();
-        if ( unlink(PUBLIC_PATH . $params['data_collect'] )) {
+        if (unlink(PUBLIC_PATH . $params['element']['data-collect'])) {
             View::info('File deleted successfully');
         } else {
             View::error('File could not be deleted, make sure you have the proper permissions.');

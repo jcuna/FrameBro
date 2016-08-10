@@ -5,19 +5,20 @@
  */
 namespace App\Core\Http;
 
+use App\Core\Api\Arrayable;
 use App\Core\Storage\File;
 
 /**
  * Class Params
  * @package App\Core\Http
  */
-class Params
+class Params implements Arrayable
 {
     /**
      * Weather there're arguments with json data.
      * @var bool
      */
-    public $hasJson = false;
+    private static $hasJson = false;
 
     /**
      * Files uploaded
@@ -75,6 +76,13 @@ class Params
     public $session;
 
     /**
+     * Stores attributes that have been added externally
+     *
+     * @var array
+     */
+    private static $persistentAttributes = [];
+
+    /**
      * Params constructor.
      */
     public function __construct()
@@ -82,7 +90,6 @@ class Params
         //TODO: Add $_SERVER, and grab header info, origin, host and url should be it's own properties.
 
         $this->addEnvArguments();
-
         $this->getJson();
         $this->buildRequest();
     }
@@ -108,27 +115,33 @@ class Params
      */
     private function getJson()
     {
-        $data = json_decode(file_get_contents("php://input"), true);
-
-        if (! is_null($data) || !empty($data)) {
-
-            $this->hasJson = true;
-
-            $_POST = array_merge($_POST, $data);
+        if (self::$hasJson) {
+            return;
         }
 
-        $this->decodeSerializedJson();
+        $data = self::getJsonInput();
+
+        if (!is_null($data) && !empty($data)) {
+            self::setJsonInput($data);
+        }
     }
 
     /**
-     * Knows about @AjaxRequest and helps by decoding json serialized data
+     * @return array
      */
-    private function decodeSerializedJson()
+    public static function getJsonInput()
     {
-        if (isset($_POST['ajax']) && is_string($_POST['ajax'])) {
+        return json_decode(file_get_contents("php://input"), true);
+    }
 
-            $_POST['ajax'] = json_decode($_POST['ajax'], true);
-        }
+    /**
+     * @param array $json
+     */
+    public static function setJsonInput(array $json)
+    {
+        self::$hasJson = true;
+
+        $_POST = array_merge($_POST, $json);
     }
 
     /**
@@ -144,11 +157,13 @@ class Params
 
         $this->setGlobalGet($request);
 
+        $this->setPersistentAttributes($request);
+
         $this->request = $request;
     }
 
     /**
-     *
+     * Set files within $_FILES super global
      */
     private function setGlobalFiles()
     {
@@ -172,6 +187,8 @@ class Params
     }
 
     /**
+     * Set attributes within $_POST
+     *
      * @param $request
      */
     private function setGlobalPost($request)
@@ -186,6 +203,8 @@ class Params
     }
 
     /**
+     * Set attributes within $_GET
+     *
      * @param $request
      */
     private function setGlobalGet($request)
@@ -199,12 +218,69 @@ class Params
     }
 
     /**
+     * @param $key
+     * @return bool
+     */
+    public static function postHas($key) {
+        return isset($_POST[$key]);
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    public static function getHas($key) {
+        return isset($_GET[$key]);
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    public static function fileHas($key) {
+        return isset($_FILES[$key]);
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     */
+    public static function postGet($key) {
+        return $_POST[$key];
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     */
+    public static function getGet($key) {
+        return $_GET[$key];
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     */
+    public static function fileGet($key) {
+        return $_FILES[$key];
+    }
+
+    /**
+     * @param $request
+     */
+    private function setPersistentAttributes($request)
+    {
+        foreach (self::$persistentAttributes as $attribute => $value) {
+            $request->{$attribute} = $value;
+        }
+    }
+
+    /**
      * @param $property
      * @return mixed
      */
     public function __get($property)
     {
-
         // We use this form to check if isset
         // to avoid using the magic __isset
         if (!property_exists($this, $property)) {
@@ -245,7 +321,6 @@ class Params
 
         return $bool;
     }
-
 
     /**
      * @param $name
@@ -301,11 +376,15 @@ class Params
      * Gets all params into array
      * @return array
      */
-    public function all()
+    public function toArray()
     {
         $result = [];
-        foreach( $this->request as $property => $value) {
-            $result[$property] = $value;
+        foreach ($this->request as $property => $value) {
+            if ($value instanceof Arrayable) {
+                $result[$property] = $value->toArray();
+            } else {
+                $result[$property] = $value;
+            }
         }
         return $result;
     }
@@ -315,9 +394,22 @@ class Params
      *
      * @return array
      */
-    public function toArray()
+    public function all()
     {
-        return $this->all();
+        return $this->toArray();
+    }
+
+    /**
+     * Add parameters and make them persist throughout instances.
+     *
+     * Override any existing params with same property name
+     *
+     * @param $key
+     * @param $value
+     */
+    public static function addPersistentAttributes($key, $value)
+    {
+        self::$persistentAttributes[$key] = $value;
     }
 
     /**
@@ -328,6 +420,5 @@ class Params
         $_POST = array();
         $_GET = array();
         $_FILES = array();
-
     }
 }

@@ -190,11 +190,6 @@ interface ModelInterface
     public function get(array $fields = ['*']);
 
     /**
-     * @return array
-     */
-    public function toArray();
-
-    /**
      * @return mixed
      */
     public function first();

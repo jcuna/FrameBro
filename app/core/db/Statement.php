@@ -142,7 +142,7 @@ class Statement {
 
     /**
      * Modify statements to be of alter types
-     * 
+     *
      * @var bool
      */
     private $alterStatements = false;
@@ -168,6 +168,13 @@ class Statement {
      * @var array
      */
     private static $statements = [];
+
+    /**
+     * represents column counts
+     *
+     * @var int
+     */
+    private $columnCount = 0;
 
     /*
      |-----------------------|
@@ -872,7 +879,11 @@ class Statement {
         $conclusionStatementsArray = $this->getQueryConclusions();
 
         if (!empty($conclusionStatementsArray)) {
-            $string .= "," . PHP_EOL . implode(',' . PHP_EOL, $conclusionStatementsArray);
+            if ($this->columnCount) {
+                $string .= "," . PHP_EOL;
+            }
+
+            $string .= implode(',' . PHP_EOL, $conclusionStatementsArray);
         }
 
         if (!$this->alterStatements) {
@@ -1076,12 +1087,10 @@ class Statement {
             $this->makeIndex($key, $name);
             $key++;
         }
-        
+
         $this->query[$key]['name'] = $name;
         $this->query[$key]['type'] = 'constraint';
         $this->query[$key]['conclusions'] = !$this->alterStatements ? $grammar : "$this->alterKeyword $grammar";
-
-
     }
 
     /**
@@ -1092,7 +1101,7 @@ class Statement {
     public function addConstrainAction($actionName, $action)
     {
         $actions = $this->default;
-        
+
         if (!isset($actions[$actionName])) {
             throw new \Exception('Invalid action name');
         }
@@ -1103,7 +1112,7 @@ class Statement {
 
         $currentGrammar = $this->query[$key]['conclusions'];
         $this->query[$key]['conclusions'] = $currentGrammar . PHP_EOL . "$actions[$actionName] $action";
-        
+
     }
 
     /**
@@ -1230,7 +1239,7 @@ class Statement {
 
     /**
      * Drop a table
-     * 
+     *
      * @param $columnName
      */
     public function dropColumn($columnName)
@@ -1240,7 +1249,7 @@ class Statement {
 
     /**
      * Drop constraint
-     * 
+     *
      * @param $columnName
      */
     public function dropForeignKey($columnName)
@@ -1257,6 +1266,8 @@ class Statement {
      */
     public function addColumn($name, $type, $length = null)
     {
+        $this->columnCount++;
+
         $pos = null;
 
         if ($type === 'primary') {
@@ -1329,7 +1340,7 @@ class Statement {
         {
             return true;
         }
-        
+
         return false;
     }
 

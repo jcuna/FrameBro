@@ -306,6 +306,28 @@ class Params implements Arrayable
     }
 
     /**
+     * Convert a param string date into a date object
+     *
+     * @param $key
+     * @return \DateTime
+     */
+    public function getAsDateObject($key)
+    {
+        return new \DateTime($this->request->{$key});
+    }
+
+    /**
+     * Return a sql datetime string
+     *
+     * @param $key
+     * @return string
+     */
+    public function getAsSqlDate($key)
+    {
+        return sqlTime($this->request->{$key});
+    }
+
+    /**
      * Weather this key exists
      *
      * @param $key

@@ -7,20 +7,16 @@
 //vendor autoloading
 require ABSOLUTE_PATH . '/vendor/autoload.php';
 
-/** Start dotenv instance */
-if (file_exists(ABSOLUTE_PATH . '/.env')) {
-    $dotenv = new Dotenv\Dotenv( ABSOLUTE_PATH );
-    $dotenv->load();
-}
-
 /**
  * @overrides ddd by Kint in case there's an ajax call.
+ *
+ * @param $dumpData
  */
 function ddd() {
 
     $args = func_get_args()[0];
 
-    if (count($args) === 1) {
+    if (is_array($args) && count($args) === 1) {
         $args = $args[0];
     }
 
@@ -46,6 +42,11 @@ function ddd() {
 function dd() {
     $args = func_get_args();
     ddd($args);
+}
+
+if (file_exists(ABSOLUTE_PATH . '/.env')) {
+    $dotenv = new Dotenv\Dotenv( ABSOLUTE_PATH );
+    $dotenv->load();
 }
 
 /**
@@ -86,7 +87,7 @@ function shiftElement(&$array, $oldPos, $pos)
 
 /**
  * Set up an ajax request call with our ajax request provider.
- * 
+ *
  * @param array $data
  */
 function ajaxRequest(array $data)

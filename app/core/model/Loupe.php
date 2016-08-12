@@ -379,11 +379,11 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
     /**
      * @param $field
-     * @param $bindingA
-     * @param $bindingB
+     * @param $fromDate
+     * @param $toDate
      * @return $this
      */
-    public function between( $field, $bindingA, $bindingB )
+    public function between( $field, $fromDate, $toDate )
     {
         $statement = $this->getStatement();
 
@@ -393,8 +393,8 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
         $statement->setBetween($field, $value, $valueB);
 
-        $statement->setBindings($value, $bindingA);
-        $statement->setBindings($valueB, $bindingB);
+        $statement->setBindings($value, $fromDate);
+        $statement->setBindings($valueB, $toDate);
 
         return $this;
     }
@@ -508,10 +508,12 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      *
      * @throws ModelException
      */
-    public function save($attributes = NULL)
+    public function save($attributes = null)
     {
         if (is_null($attributes)) {
             $attributes = $this->attributes;
+        } else {
+            $attributes = new Attributes($attributes);
         }
 
         if (empty((array) $attributes)) {
@@ -585,9 +587,9 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     /**
      * Setup the proper value for the updated_at and created_at columns.
      *
-     * @param $attributes
+     * @param Attributes $attributes
      */
-    private function setupTimeStamp(&$attributes)
+    private function setupTimeStamp(Attributes $attributes)
     {
         if ( $this->customTime === false ) {
 
@@ -812,7 +814,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
                 return $this->attributes->{$property};
             }
         }
-        return NULL;
+        return null;
     }
 
     /**
@@ -1133,9 +1135,9 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      */
     public function belongsToMany(
         $relatedModel,
-        $pivotTable = NULL,
-        $pivotTableLeftKey = NULL,
-        $pivotTableRightKey = NULL) {
+        $pivotTable = null,
+        $pivotTableLeftKey = null,
+        $pivotTableRightKey = null) {
 
         $this->relatedModel = new $relatedModel();
 

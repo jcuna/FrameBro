@@ -37,87 +37,58 @@ function humanTiming($ptime) {
 
     $estimate_time = time() - $ptime;
 
-    if( $estimate_time < 1 ) {
+    if ($estimate_time < 1) {
         return 'Just now';
     }
 
-    $condition = array(
+    $conditions = [
         12 * 30 * 24 * 60 * 60  =>  'year',
         30 * 24 * 60 * 60       =>  'month',
         24 * 60 * 60            =>  'day',
         60 * 60                 =>  'hour',
         60                      =>  'minute',
         1                       =>  'second'
-    );
+    ];
 
-    foreach( $condition as $secs => $str ) {
+    foreach ($conditions as $secs => $str) {
         $d = $estimate_time / $secs;
 
-        if( $d >= 1 ) {
-            $r = round( $d );
-            return $r . ' ' . $str . ( $r > 1 ? 's' : '' ) . ' ago';
+        if ($d >= 1) {
+            $r = round($d);
+            return $r . ' ' . $str . ($r > 1 ? 's' : '') . ' ago';
         }
     }
 }
 
 /**
- * Takes categories after being retrieved from database with a serialized function run on them and renders a page view.
- * @param $categories
- * @return string
- */
-function renderCategoriesDocumentsPage($categories) {
-    $categories = unserialize($categories);
-    $result = '';
-    foreach ($categories as $cat) {
-        $result .= '<span class="categories-inline well">' . $cat .' </span>';
-    }
-    return $result;
-}
-
-/**
- * @param $key
- * @param string $db_data
- * @return string
- */
-function renderValue($key, $db_data = '') {
-    if (isset($_POST[$key])) {
-        return $_POST[$key];
-    }
-    elseif (!empty($db_data)) {
-        return $db_data;
-    }
-    else {
-        return '';
-    }
-}
-
-/**
- * adds an increasing number at the end of the filename if a file with that name already exists.
+ * add an increasing number at the end of the filename if a file with that name already exists.
  * @param $filename
  * @param $dir
- * @return bool
  */
 function unique_file_name(&$filename, $dir) {
-  $filename = preg_replace("/[^.\w]/",'_',$filename);
-  $filename = preg_replace("/__+/",'_',$filename);
-  preg_match("/^(.*)\.(\w{2,4})$/",$filename,$f);
-  if ( file_exists( $dir . $filename ) ) {
-    $num = 1;
-    while ( file_exists( $dir . $filename ) ) {
-      preg_match( "/^(.*)\.(\w{2,4})$/", $filename, $f );
-      preg_match( "/(\d+)$/", $f[1], $n );
-      if (isset($n[1])) {
-          $x = $n[1];
-          $num = $n[1] + 1;
-          $num .= '.';
-          $filename = preg_replace("/$x\./",$num,$filename);  
-      }
-      else {
-          $filename = $f[1] . $num . '.' . $f[2];
-      }
+
+    $filename = preg_replace("/[^.\w]/",'_',$filename);
+    $filename = preg_replace("/__+/",'_',$filename);
+
+    preg_match("/^(.*)\.(\w{2,4})$/",$filename,$f);
+
+    if (file_exists($dir . $filename)) {
+        $num = 1;
+        while (file_exists($dir . $filename)) {
+
+            preg_match("/^(.*)\.(\w{2,4})$/", $filename, $f);
+            preg_match("/(\d+)$/", $f[1], $n);
+
+            if (isset($n[1])) {
+                $x = $n[1];
+                $num = $n[1] + 1;
+                $num .= '.';
+                $filename = preg_replace("/$x\./",$num,$filename);
+            } else {
+                $filename = $f[1] . $num . '.' . $f[2];
+            }
+        }
     }
-  }
-  return true;
 }
 
 /**
@@ -132,8 +103,10 @@ function return_bytes($val) {
         // The 'G' modifier is available since PHP 5.1.0
         case 'g':
             $val *= 1024;
+            break;
         case 'm':
             $val *= 1024;
+            break;
         case 'k':
             $val *= 1024;
     }
@@ -171,7 +144,7 @@ function getCountries($lang = 'en') {
  * @param string $lang
  * @return mixed
  */
-function getCountryByCode($countryCode, $lang = 'eng' ) {
+function getCountryByCode($countryCode, $lang = 'eng') {
 
     return getCountries($lang)[$countryCode];
 }

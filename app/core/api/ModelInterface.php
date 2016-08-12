@@ -100,13 +100,13 @@ interface ModelInterface
      * @return mixed
      */
     public function count($column = null);
-
+    
     /**
-     * @param null $attributes
+     * @param array|NULL $attributes
      * @return bool
      * @throws \Exception
      */
-    public function save($attributes = NULL);
+    public function save(array $attributes = NULL);
 
     /**
      * Insert multiple records

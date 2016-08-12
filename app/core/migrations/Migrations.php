@@ -128,7 +128,7 @@ abstract class Migrations implements DatabaseAccessInterface
 
         $stm->setAlterStatements();
 
-        $table = new Table($tableName, $this->getStatement(), true);
+        $table = new Table($tableName, $stm, true);
 
         $table->alter();
 

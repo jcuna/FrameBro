@@ -31,7 +31,7 @@ class View extends AbstractView
      * @param $viaName
      * @return string representing the route
      */
-    public static function getRoute($viaName )
+    public static function getRoute($viaName)
     {
         $route = Routes::getRoutesByAssocKey('via', $viaName);
         $result = $route['route'] === '/' ? $route['route'] : '/' . $route['route'];
@@ -48,12 +48,12 @@ class View extends AbstractView
      * @throws ViewException
      * @throws \Exception
      */
-    public static function render( $view = null, $data = array(), $responseCode = 200 )
+    public static function render($view = null, $data = array(), $responseCode = 200)
     {
         if (AjaxController::ajaxCallInProgress()) {
-            return self::renderAjax( $view, $data );
+            return self::renderAjax($view, $data);
         } else {
-            self::renderFile( $view, $data, $responseCode);
+            self::renderFile($view, $data, $responseCode);
         }
     }
 
@@ -65,7 +65,7 @@ class View extends AbstractView
      * @param $responseCode
      * @throws ViewException
      */
-    private static function renderFile( $view = null, $data = array(), $responseCode = 200 ) {
+    private static function renderFile($view = null, $data = array(), $responseCode = 200) {
 
         // if using dot convention.
         if (strpos($view, '.')) {
@@ -75,10 +75,10 @@ class View extends AbstractView
         if (is_null($view) || file_exists(VIEWS_PATH . $view . '.php')) {
             http_response_code($responseCode);
             self::init();
-            self::includeView( $view, $data );
+            self::includeView($view, $data);
             exit;
         } else {
-            if (strpos($view, '.php') > 0 ) {
+            if (strpos($view, '.php') > 0) {
                 throw new ViewException('A view name cannot have a .php extension when called with View::render');
             } else {
                 throw new ViewException('Calling view, but view does not exist. ' . VIEWS_PATH . $view . '.php');
@@ -100,7 +100,7 @@ class View extends AbstractView
             $view = str_replace('.', '/', $view);
         }
 
-        if ( self::includeView($view, $data, true) ) {
+        if (self::includeView($view, $data, true)) {
             try {
                 $file = STORAGE_PATH . 'views/ajax-' . str_replace('/', '.', $view);
                 ob_start();
@@ -141,8 +141,7 @@ class View extends AbstractView
     {
         return self::is_user_role($role);
     }
-
-
+    
     /**
      * @param $key
      * @return mixed

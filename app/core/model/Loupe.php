@@ -322,11 +322,16 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      */
     public function all(array $selection = ["*"])
     {
-
         $this->findAll = true;
+        $this->get($selection);
 
-        return $this->get($selection);
-
+        if ($this->count > 1) {
+            return $this;
+        } else {
+            $collection = new Collection([$this->attributes]);
+            $this->attributes = $collection;
+            return $this;
+        }
     }
 
     /**

@@ -43,29 +43,33 @@ class View extends AbstractView
      * 
      * @param null $view
      * @param array $data
-     * @param int $responseCode
      * @return string
      * @throws ViewException
      * @throws \Exception
      */
-    public static function render($view = null, $data = array(), $responseCode = 200)
+    public static function render($view = null, $data = [], $responseCode = 200)
     {
+        Response::setResponseCode($responseCode);
+        ob_start();
         if (AjaxController::ajaxCallInProgress()) {
-            return self::renderAjax($view, $data);
+            self::renderAjax($view, $data);
+            return ob_get_clean();
         } else {
-            self::renderFile($view, $data, $responseCode);
+            self::renderFile($view, $data);
+            Response::render(ob_get_clean(), $responseCode);
         }
     }
 
     /**
      * Render the views and includes no oop functions for easy access by the template files.
      * if no view is provided, then it will echo the data sent through within the body.
-     * @param $view
+     * 
+     * @param null $view
      * @param array $data
-     * @param $responseCode
+     * @return bool
      * @throws ViewException
      */
-    private static function renderFile($view = null, $data = array(), $responseCode = 200) {
+    private static function renderFile($view = null, $data = []) {
 
         // if using dot convention.
         if (strpos($view, '.')) {
@@ -73,10 +77,8 @@ class View extends AbstractView
         }
 
         if (is_null($view) || file_exists(VIEWS_PATH . $view . '.php')) {
-            http_response_code($responseCode);
             self::init();
-            self::includeView($view, $data);
-            exit;
+            return self::includeView($view, $data);
         } else {
             if (strpos($view, '.php') > 0) {
                 throw new ViewException('A view name cannot have a .php extension when called with View::render');
@@ -93,7 +95,7 @@ class View extends AbstractView
      * @throws ViewException
      * @throws \Exception
      */
-    private static function renderAjax($view, $data = array()) {
+    private static function renderAjax($view, $data = []) {
 
         // if using dot convention.
         if (strpos($view, '.')) {
@@ -103,20 +105,15 @@ class View extends AbstractView
         if (self::includeView($view, $data, true)) {
             try {
                 $file = STORAGE_PATH . 'views/ajax-' . str_replace('/', '.', $view);
-                ob_start();
                 self::init();
 
                 //human keys in array become variables, $data still available
                 if (!is_null($data) && is_array($data)) {
                     extract($data);
                 }
-
-                include $file;
-                $result = ob_get_clean();
-                return $result;
+                return include $file;
                 //if an error occurred, clear output buffer and throw exception.
             } catch (\Exception $e) {
-                ob_end_clean();
                 throw $e;
             }
         } else {

@@ -42,5 +42,5 @@ Routes::resources('admin', 'admin',
 //When a page is missing.
 Routes::missing( function()
 {
-    View::render('errors/error', 'The requested page doesn\'t exist', 404);
+    return View::render('errors/error', 'The requested page doesn\'t exist', 404);
 });

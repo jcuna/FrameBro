@@ -85,7 +85,7 @@ class App {
                 exit;
             }
         }
-        return null;
+        exit;
     }
 
 

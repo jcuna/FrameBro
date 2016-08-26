@@ -973,8 +973,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      */
     public function first()
     {
-        $arAttributes = iterator_to_array($this->attributes);
-        return reset($arAttributes);
+        return $this->limit(1)->get();
     }
 
     /**

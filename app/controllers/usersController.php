@@ -199,7 +199,6 @@ class usersController extends Controller
 
     public function allUsers()
     {
-
         $users = new User();
         $users->all();
 

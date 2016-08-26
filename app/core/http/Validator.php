@@ -4,7 +4,7 @@
  * Date: 1/17/16
  */
 
-namespace App\Core\Html;
+namespace App\Core\Http;
 
 use App\Core\Exceptions\ControllerException;
 use App\Core\Http\Params;

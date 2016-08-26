@@ -12,12 +12,20 @@ use App\Core\Api\AbstractResponse;
 
 class Response extends AbstractResponse
 {
-    public static function render($data, $responseCode = 200)
+    /**
+     *
+     * @overwrite parent::render
+     * @param null $content
+     * @param null $responseCode
+     */
+    public static function render($content = null, $responseCode = null)
     {
-        self::setResponseCode($responseCode);
-        self::setContent($data);
+        if (!is_null($responseCode)) {
+            self::setResponseCode($responseCode);
+        }
+        if (!is_null($content)) {
+            self::setContent($content);
+        }
         parent::render();
-        
     }
-
 }

@@ -40,7 +40,7 @@ class View extends AbstractView
 
     /**
      * Fires the proper view render method based on type of call.
-     * 
+     *
      * @param null $view
      * @param array $data
      * @return string
@@ -56,14 +56,15 @@ class View extends AbstractView
             return ob_get_clean();
         } else {
             self::renderFile($view, $data);
-            Response::render(ob_get_clean(), $responseCode);
+            Response::render(ob_get_clean());
         }
+        exit;
     }
 
     /**
      * Render the views and includes no oop functions for easy access by the template files.
      * if no view is provided, then it will echo the data sent through within the body.
-     * 
+     *
      * @param null $view
      * @param array $data
      * @return bool
@@ -138,7 +139,7 @@ class View extends AbstractView
     {
         return self::is_user_role($role);
     }
-    
+
     /**
      * @param $key
      * @return mixed

@@ -12,56 +12,73 @@ abstract class AbstractResponse
 {
     /**
      * Contain the headers to be sent
-     * 
+     *
      * @var array
      */
     private static $headers = [];
 
     /**
      * Contain response code
-     * 
+     *
      * @var int
      */
     private static $responseCode = 200;
 
     /**
      * Contain body or content of response
-     * 
+     *
      * @var string
      */
     private static $content = '';
 
     /**
      * Contain all valid response codes
-     * 
+     *
      * @var array
      */
     private static $validStatusCodes = [
-        100 => "Continue",
-        200 => "OK",
-        201 => "Created",
-        204 => "No Content",
-        206 => "Partial Content",
-        301 => "Moved Permanently",
-        302 => "Found",
-        303 => "See Other",
-        304 => "Not Modified",
-        307 => "Temporary Redirect",
-        308 => "Permanent Redirect",
-        404 => "Not Found",
-        410 => "Gone",
-        412 => "Precondition Failed",
-        451 => "Unavailable For Legal Reasons",
-        500 => "Internal Server Error",
-        501 => "Not Implemented",
-        502 => "Bad Gateway",
-        503 => "Service Unavailable",
-        504 => "Gateway Timeout"
+        100 => 'Continue',
+        101 => 'Switching Protocols',
+        200 => 'OK',
+        201 => 'Created',
+        202 => 'Accepted',
+        203 => 'Non-Authoritative Information',
+        204 => 'No Content',
+        205 => 'Reset Content',
+        206 => 'Partial Content',
+        300 => 'Multiple Choices',
+        301 => 'Moved Permanently',
+        302 => 'Moved Temporarily',
+        303 => 'See Other',
+        304 => 'Not Modified',
+        305 => 'Use Proxy',
+        400 => 'Bad Request',
+        401 => 'Unauthorized',
+        402 => 'Payment Required',
+        403 => 'Forbidden',
+        404 => 'Not Found',
+        405 => 'Method Not Allowed',
+        406 => 'Not Acceptable',
+        407 => 'Proxy Authentication Required',
+        408 => 'Request Time-out',
+        409 => 'Conflict',
+        410 => 'Gone',
+        411 => 'Length Required',
+        412 => 'Precondition Failed',
+        413 => 'Request Entity Too Large',
+        414 => 'Request-URI Too Large',
+        415 => 'Unsupported Media Type',
+        500 => 'Internal Server Error',
+        501 => 'Not Implemented',
+        502 => 'Bad Gateway',
+        503 => 'Service Unavailable',
+        504 => 'Gateway Time-out',
+        505 => 'HTTP Version not supported'
     ];
 
     /**
      * Render content
-     * 
+     *
      * @param null $content
      */
     public static function render($content = null)
@@ -69,7 +86,7 @@ abstract class AbstractResponse
         if ($content !== null) {
             self::setContent($content);
         }
-        
+
         http_response_code(self::$responseCode);
         foreach (self::$headers as $headerName => $headerValue) {
             header($headerName.': '.$headerValue);
@@ -81,7 +98,7 @@ abstract class AbstractResponse
 
     /**
      * Set custom headers one at a time
-     * 
+     *
      * @param $name
      * @param $value
      */
@@ -92,7 +109,7 @@ abstract class AbstractResponse
 
     /**
      * set batch of headers
-     * 
+     *
      * @param array $headers
      */
     public static function setHeaders(array $headers)
@@ -104,7 +121,7 @@ abstract class AbstractResponse
 
     /**
      * Set a valid response code
-     * 
+     *
      * @param $responseCode
      */
     public static function setResponseCode($responseCode)
@@ -116,7 +133,7 @@ abstract class AbstractResponse
 
     /**
      * Set content or body of response
-     * 
+     *
      * @param $content
      */
     public static function setContent($content) {
@@ -125,7 +142,7 @@ abstract class AbstractResponse
             if (!isset(self::$headers['Content-type'])) {
                 self::setHeader('Content-type', 'application/json');
             }
-            
+
             switch ($content) {
                 case $content instanceof Jsonable:
                     self::$content = $content->toJson();
@@ -137,14 +154,14 @@ abstract class AbstractResponse
                     self::$content = json_encode($content);
             }
         } elseif (is_string($content) || method_exists($content, "__toString")) {
-            self::$content = $content;            
+            self::$content = $content;
         }
     }
 
     /**
      * Search for content
      */
-    protected function searchForContent()
+    protected static function searchForContent()
     {
         if (self::$content === '') {
             self::setResponseCode(204);

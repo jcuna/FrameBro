@@ -88,7 +88,7 @@ class Cli
     private $commands = [
 
         "flush:views" => 'flushViews',
-        "rollback" => "rollBack",
+        "db:rollback" => "rollBack",
         "db:migrate" => "migrate"
     ];
 

@@ -6,7 +6,6 @@ namespace App\Core\Http;
 
 use App\Controllers\usersController;
 use App\Core\Exceptions\ControllerException;
-use App\Core\Html\Validator;
 use App\Core\Response;
 use App\Core\View;
 

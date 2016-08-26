@@ -7,7 +7,7 @@
 namespace App\Core\Http;
 
 use App\Core\Exceptions\ControllerException;
-use App\Core\Http\Params;
+use App\Core\Html\WebForm;
 use App\Core\Model\Generic;
 use App\Core\View;
 
@@ -40,7 +40,7 @@ trait Validator
 
     /**
      * The list of fields that are validatable
-     * 
+     *
      * @var array
      */
     public $validatable = [];
@@ -718,20 +718,20 @@ trait Validator
     public function caller($name, $arguments)
     {
         if (method_exists($this, $name)) {
-           return call_user_func_array([$this, $name], [$arguments]);
+            return call_user_func_array([$this, $name], [$arguments]);
         }
 
         switch ($name) {
             case 'array':
                 call_user_func_array([$this, 'isArray'], [$arguments]);
-        break;
+                break;
             case 'bool':
             case 'boolean':
                 call_user_func_array([$this, 'isBool'], [$arguments]);
-        break;
+                break;
             case 'numeric':
                 call_user_func_array([$this, 'number'], [$arguments]);
-        break;
+                break;
 
             default:
 

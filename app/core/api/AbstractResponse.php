@@ -137,7 +137,10 @@ abstract class AbstractResponse
      * @param $content
      */
     public static function setContent($content) {
-        if (is_array($content) || $content instanceof Jsonable || $content instanceof Arrayable) {
+
+        if (is_string($content) || method_exists($content, "__toString")) {
+            self::$content = $content;
+        } elseif (is_array($content) || $content instanceof Jsonable || $content instanceof Arrayable) {
 
             if (!isset(self::$headers['Content-type'])) {
                 self::setHeader('Content-type', 'application/json');
@@ -153,8 +156,6 @@ abstract class AbstractResponse
                 default:
                     self::$content = json_encode($content);
             }
-        } elseif (is_string($content) || method_exists($content, "__toString")) {
-            self::$content = $content;
         }
     }
 

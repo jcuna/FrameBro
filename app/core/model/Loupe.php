@@ -8,6 +8,7 @@ namespace App\Core\Model;
 
 use App\Core\Api\Arrayable;
 use App\Core\Api\DatabaseAccessInterface;
+use App\Core\Api\Jsonable;
 use App\Core\Api\ModelInterface;
 use App\Core\Cache\Cache;
 use App\Core\Db\Database;
@@ -22,7 +23,7 @@ use App\Libraries\Inflect;
  * Class Loupe
  * @package App\Core\Model
  */
-abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \IteratorAggregate, Arrayable
+abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \IteratorAggregate, Arrayable, Jsonable
 {
     /**
      * The attributes object containing all properties of the model.
@@ -966,6 +967,16 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         }
 
         return $result;
+    }
+
+    /**
+     * Return attributes as json string.
+     *
+     * @return string
+     */
+    public function toJson()
+    {
+        return json_encode($this->toArray());
     }
 
     /**

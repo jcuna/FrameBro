@@ -6,17 +6,18 @@
  */
 
 namespace App\Core\Model;
+use App\Core\Api\Arrayable;
 
 /**
  * Class Attributes
  * @package App\Core\Model
  */
-class Attributes implements \IteratorAggregate
+class Attributes implements \IteratorAggregate, Arrayable
 {
 
     /**
      * Attributes constructor.
-     * @param null $arAttributes
+     * @param array $arAttributes
      */
     public function __construct(array $arAttributes = [])
     {

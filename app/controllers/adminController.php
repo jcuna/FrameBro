@@ -46,7 +46,7 @@ class adminController extends Controller
                 )
             );
 
-            View::render('admin/file_upload', $files);
+            return View::render('admin/file_upload', $files);
         }
         else {
             $this->redirect('/');
@@ -54,14 +54,12 @@ class adminController extends Controller
     }
 
     /**
-     * @param $params
      * @return string
-     * @throws \Exception
      */
     public function deleteFiles( ) {
         $params = new Params();
         $params = $params->all();
-        if ( unlink(PUBLIC_PATH . $params['data_collect'] )) {
+        if (unlink(PUBLIC_PATH . $params['element']['data-collect'])) {
             View::info('File deleted successfully');
         } else {
             View::error('File could not be deleted, make sure you have the proper permissions.');
@@ -117,10 +115,10 @@ class adminController extends Controller
             }
             $result .= '</ul>';
 
-            View::render('admin/index', $result);
+            return View::render('admin/index', $result);
         }
         else {
-            View::render('errors/error', 'Access denied', '443');
+            return View::render('errors/error', 'Access denied', '443');
         }
     }
 
@@ -133,7 +131,7 @@ class adminController extends Controller
         if ($this->isLoggedIn()) {
             return phpinfo();
         } else {
-            View::render('errors/error', 'Access denied', '443');
+            return View::render('errors/error', 'Access denied', '443');
         }
     }
 
@@ -195,9 +193,9 @@ class adminController extends Controller
                 }
             }
             $result .= '</ul>';
-            View::render('admin/index', $result);
+            return View::render('admin/index', $result);
         } else {
-            View::render('errors/error', 'Access denied', '443');
+            return View::render('errors/error', 'Access denied', '443');
         }
     }
 
@@ -259,10 +257,10 @@ class adminController extends Controller
                     }
                 }
 
-                View::render('user/create', $arRoles);
+                return View::render('user/create', $arRoles);
             }
         } else {
-            View::render('errors/error', 'An unexpected error has occurred', 500);
+            return View::render('errors/error', 'An unexpected error has occurred', 500);
         }
     }
 }

@@ -13,14 +13,44 @@ namespace App\Core\Html;
  */
 class Pagination
 {
+    /**
+     * @var int
+     */
     public $count;
+
+    /**
+     * @var int
+     */
     public $limit;
+
+    /**
+     * @var int
+     */
     public $page;
+
+    /**
+     * @var int
+     */
     public $paginationLength;
+
+    /**
+     * @var int
+     */
     public $paginationEnd;
 
+    /**
+     * @var int
+     */
     public $total;
+
+    /**
+     * @var int
+     */
     public $paginationStart = 1;
+
+    /**
+     * @var bool
+     */
     private $paginationProcessed = false;
 
     /**
@@ -30,9 +60,9 @@ class Pagination
      * @param $currentPage int|string the current page
      * @param int $paginationLength int|string the length of the pagination element. Or range default 10
      */
-    public function __construct( $count, $limit, $currentPage, $paginationLength = 10 )
+    public function __construct($count, $limit, $currentPage, $paginationLength = 10)
     {
-        if ( is_null($currentPage) || $currentPage === 0 ) {
+        if (is_null($currentPage) || $currentPage === 0) {
             $currentPage = 1;
         }
 
@@ -71,9 +101,9 @@ class Pagination
      */
     private function processPagination()
     {
-        if ( $this->total > $this->paginationLength ) {
-            $this->paginationEnd = ( ( $this->total - $this->page ) >= $this->paginationLength ) ? $this->page + $this->paginationLength : $this->total;
-            $this->paginationStart = ( $this->page <= $this->paginationLength ) ? 1 : ( $this->page - $this->paginationLength );
+        if ($this->total > $this->paginationLength) {
+            $this->paginationEnd = (($this->total - $this->page) >= $this->paginationLength) ? $this->page + $this->paginationLength : $this->total;
+            $this->paginationStart = ($this->page <= $this->paginationLength) ? 1 : ($this->page - $this->paginationLength);
         }
 
         $this->paginationProcessed = true;
@@ -84,7 +114,7 @@ class Pagination
      */
     public function getPaginationEnd() {
 
-        if ( $this->paginationProcessed ) {
+        if ($this->paginationProcessed ) {
             return $this->paginationEnd;
         } else {
             $this->processPagination();
@@ -97,7 +127,7 @@ class Pagination
      */
     public function getPaginationStart() {
 
-        if ( $this->paginationProcessed ) {
+        if ($this->paginationProcessed ) {
             return $this->paginationStart;
         } else {
             $this->processPagination();

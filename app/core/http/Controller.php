@@ -6,7 +6,7 @@ namespace App\Core\Http;
 
 use App\Controllers\usersController;
 use App\Core\Exceptions\ControllerException;
-use App\Core\Html\Validator;
+use App\Core\Response;
 use App\Core\View;
 
 /**
@@ -52,11 +52,12 @@ class Controller {
             }
         }
     }
-
+    
     /**
      * @param $name
      * @param $arguments
-     * @throws \App\Core\Exceptions\ViewException
+     * @return mixed|string|void
+     * @throws ControllerException
      */
     public function __call($name, $arguments)
     {
@@ -119,7 +120,7 @@ class Controller {
         if (is_array($this->beforeFilter['authenticated'])) {
             if (in_array($name, $this->beforeFilter['authenticated']) && !$this->isLoggedIn()
                 || in_array('all', $this->beforeFilter['authenticated']) && !$this->isLoggedIn()) {
-
+                
                 return View::render('errors/error', 'Access denied', 403);
             }
         } else {
@@ -153,8 +154,8 @@ class Controller {
         if ($location === 'home') {
             $location = '/';
         }
-        header("location: $location");
-        exit;
+        Response::setHeader('location', $location);
+        Response::render('', 308);
     }
 
     /**

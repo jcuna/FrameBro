@@ -9,6 +9,7 @@
 namespace App\Core\Ajax;
 
 use App\Core\Api\BroExceptionsInterface;
+use App\Core\Html\DomElement;
 use App\Core\Http\Controller;
 use App\Core\Http\Params;
 use App\Core\JsonResponse;
@@ -50,9 +51,8 @@ class AjaxController extends Controller
     /**
      * @output JsonResponse string
      */
-    public function jsonResponder()
+    public static function jsonResponder()
     {
-
         self::AjaxHandler();
 
         $extra = [];
@@ -77,7 +77,7 @@ class AjaxController extends Controller
     {
         self::$ajaxCallInProgress = true;
 
-        $params = self::getParams();
+        $params = self::getRequestParams();
 
         $class = $params['ajax']['class'];
         $controller = new $class;
@@ -110,19 +110,54 @@ class AjaxController extends Controller
     }
 
     /**
-     * @return Params|array
+     * @return array|void
      */
-    private static function getParams()
+    private static function getRequestParams()
     {
-        $params = (new Params())->all();
-
-        //skips the respond altogether if no ajax data
-        if (!isset($params['ajax'])) {
+        if (self::setRequestParams()) {
+            return (new Params())->toArray();
+        } else {
             self::$result = 'Invalid ajax call';
             self::$status = 400;
             self::jsonResponder();
+            return;
+        }
+    }
+
+    /**
+     * Set params to the Params classes
+     *
+     * @return bool
+     */
+    private static function setRequestParams()
+    {
+        $json = Params::getJsonInput();
+
+        if (!is_null($json) && !empty($json)) {
+            Params::setJsonInput($json);
         }
 
-        return $params;
+        if (Params::postHas('ajax')) {
+            $params = Params::postGet('ajax');
+            if (is_string($params)) {
+                $params = json_decode($params, true);
+            }
+            Params::addPersistentAttributes('ajax', $params);
+            self::collapseDomElement();
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
+     * Collapses element key from the dom into an xml object.
+     */
+    private static function collapseDomElement()
+    {
+        if (Params::postHas('element')) {
+            $element = new DomElement(Params::postGet('element'));
+            Params::addPersistentAttributes('element', $element);
+        }
     }
 }

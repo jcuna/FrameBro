@@ -31,7 +31,7 @@ class View extends AbstractView
      * @param $viaName
      * @return string representing the route
      */
-    public static function getRoute($viaName )
+    public static function getRoute($viaName)
     {
         $route = Routes::getRoutesByAssocKey('via', $viaName);
         $result = $route['route'] === '/' ? $route['route'] : '/' . $route['route'];
@@ -43,27 +43,34 @@ class View extends AbstractView
      *
      * @param null $view
      * @param array $data
-     * @param int $responseCode
+     * @return string
      * @throws ViewException
+     * @throws \Exception
      */
-    public static function render( $view = null, $data = array(), $responseCode = 200 )
+    public static function render($view = null, $data = [], $responseCode = 200)
     {
+        Response::setResponseCode($responseCode);
+        ob_start();
         if (AjaxController::ajaxCallInProgress()) {
-            return self::renderAjax( $view, $data );
+            self::renderAjax($view, $data);
+            return ob_get_clean();
         } else {
-            self::renderFile( $view, $data, $responseCode);
+            self::renderFile($view, $data);
+            Response::render(ob_get_clean());
         }
+        exit;
     }
 
     /**
      * Render the views and includes no oop functions for easy access by the template files.
      * if no view is provided, then it will echo the data sent through within the body.
-     * @param $view
+     *
+     * @param null $view
      * @param array $data
-     * @param $responseCode
+     * @return bool
      * @throws ViewException
      */
-    private static function renderFile( $view = null, $data = array(), $responseCode = 200 ) {
+    private static function renderFile($view = null, $data = []) {
 
         // if using dot convention.
         if (strpos($view, '.')) {
@@ -71,13 +78,10 @@ class View extends AbstractView
         }
 
         if (is_null($view) || file_exists(VIEWS_PATH . $view . '.php')) {
-            http_response_code($responseCode);
             self::init();
-            self::includeView( $view, $data );
-            exit;
-        }
-        else {
-            if (strpos($view, '.php') > 0 ) {
+            return self::includeView($view, $data);
+        } else {
+            if (strpos($view, '.php') > 0) {
                 throw new ViewException('A view name cannot have a .php extension when called with View::render');
             } else {
                 throw new ViewException('Calling view, but view does not exist. ' . VIEWS_PATH . $view . '.php');
@@ -88,33 +92,29 @@ class View extends AbstractView
     /**
      * @param $view
      * @param array $data
-     * @return string
+     * @return mixed
      * @throws ViewException
+     * @throws \Exception
      */
-    private static function renderAjax($view, $data = array()) {
+    private static function renderAjax($view, $data = []) {
 
         // if using dot convention.
         if (strpos($view, '.')) {
             $view = str_replace('.', '/', $view);
         }
 
-        if ( self::includeView($view, $data, true) ) {
+        if (self::includeView($view, $data, true)) {
             try {
                 $file = STORAGE_PATH . 'views/ajax-' . str_replace('/', '.', $view);
-                ob_start();
                 self::init();
 
                 //human keys in array become variables, $data still available
                 if (!is_null($data) && is_array($data)) {
                     extract($data);
                 }
-
-                include $file;
-                $result = ob_get_clean();
-                return $result;
+                return include $file;
                 //if an error occurred, clear output buffer and throw exception.
             } catch (\Exception $e) {
-                ob_end_clean();
                 throw $e;
             }
         } else {
@@ -139,7 +139,6 @@ class View extends AbstractView
     {
         return self::is_user_role($role);
     }
-
 
     /**
      * @param $key

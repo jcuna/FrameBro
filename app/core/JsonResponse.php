@@ -6,12 +6,13 @@
  */
 
 namespace App\Core;
+use App\Core\Api\AbstractResponse;
 
 /**
  * Class JsonResponse
  * @package App\Core
  */
-class JsonResponse
+class JsonResponse extends AbstractResponse
 {
     /**
      * @param $data
@@ -20,18 +21,16 @@ class JsonResponse
      */
     public static function Response($data, $status = 200, array $extra = null) {
 
-        $responseArray = ['data' => $data, 'status' => $status ];
+        $responseArray = ['data' => $data, 'status' => $status];
 
         if (!is_null($extra) && !empty($extra)) {
-            $key = key( $extra );
+            $key = key($extra);
             $val = $extra[$key];
             $responseArray[$key] = $val;
         }
-
-        http_response_code( $status );
-        header('Content-type: application/json');
-        echo json_encode( $responseArray );
-        exit;
+        
+        self::setHeader('Content-type', 'application/json');
+        self::setResponseCode($status);
+        self::render($responseArray);
     }
-
 }

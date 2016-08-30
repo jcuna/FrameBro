@@ -88,7 +88,8 @@ class Cli
     private $commands = [
 
         "flush:views" => 'flushViews',
-        "rollback" => "rollBack"
+        "db:rollback" => "rollBack",
+        "db:migrate" => "migrate"
     ];
 
     /**
@@ -120,19 +121,19 @@ class Cli
 
         }
     }
-    
+
     /**
-    * Ask user for input
-    *
-    * @param string $question
-    * @return string - the user input
-    */
+     * Ask user for input
+     *
+     * @param string $question
+     * @return string - the user input
+     */
     public function ask($question)
     {
         $this->output($question);
         $handle = fopen ("php://stdin","r");
         $line = fgets($handle);
-        
+
         return trim($line);
     }
 
@@ -182,6 +183,9 @@ class Cli
 
         if (!isset($args[1])) {
             $this->output('You must specify a command', 'red');
+            foreach ($this->commands as $command => $method) {
+                $this->output($command, 'green');
+            }
             exit;
         }
     }
@@ -192,9 +196,7 @@ class Cli
     private function callAction()
     {
         try {
-
             $method = $this->method;
-
             if ($this->getCommand($method)) {
                 $method = $this->getCommand($method);
             }
@@ -202,21 +204,16 @@ class Cli
             if (!method_exists($this, $method)) {
                 throw new \Exception('Method ' . $method . ' does not exist');
             }
-
             if (empty($this->args)) {
 
                 $this->$method();
 
             } else {
-
                 return call_user_func_array([$this, $method], [$this->args]);
             }
-
         } catch (\Exception $e) {
-
             $this->output($this->getOutputFromException($e), 'red');
         }
-
         return false;
     }
 

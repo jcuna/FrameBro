@@ -12,7 +12,7 @@ class homeController extends Controller
 
         $this->createUserIfNoneExists();
 
-        View::render('user.view_user');
+        return View::render('user.view_user');
 
     }
 

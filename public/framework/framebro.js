@@ -4,7 +4,7 @@
  */
 bro = new Framebro();
 
-$( document ).ready( function () {
+$(document).ready( function () {
     'use strict';
 
     $.ajaxSetup({
@@ -127,7 +127,7 @@ bro.complete( function (e) {
                  */
 
                 var jsMethod;
-                 // if we want to override jquery method for this call
+                // if we want to override jquery method for this call
                 if (typeof bro.jQueryMethodOverride !== "undefined") {
                     jsMethod = bro.jQueryMethodOverride;
                 } else {
@@ -384,13 +384,7 @@ function Framebro() {
 
                     // if it's not a form, then let's send a json request with all the data we can collect
                 } else {
-
-                    $(this).val() ? processData['value'] = $(this).val() :
-                        ( $(this).attr('value') ? processData['value'] = $(this).attr('value') : null );
-                    $(this).attr('data-collect') ? processData['data_collect'] = $(this).attr('data-collect') : null;
-                    $(this).attr('href') ? processData['href'] = $(this).attr('href') : null;
-                    $(this).text() ? processData['text'] = $(this).text() : null;
-
+                    processData['element'] = $(this).prop("outerHTML");
                     $.extend(processData, { ajax: that.requests[selector] });
                     request = JSON.stringify(processData);
                 }

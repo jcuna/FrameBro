@@ -6,7 +6,9 @@
 
 namespace App\Core\Model;
 
+use App\Core\Api\Arrayable;
 use App\Core\Api\DatabaseAccessInterface;
+use App\Core\Api\Jsonable;
 use App\Core\Api\ModelInterface;
 use App\Core\Cache\Cache;
 use App\Core\Db\Database;
@@ -21,7 +23,7 @@ use App\Libraries\Inflect;
  * Class Loupe
  * @package App\Core\Model
  */
-abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \IteratorAggregate
+abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \IteratorAggregate, Arrayable, Jsonable
 {
     /**
      * The attributes object containing all properties of the model.
@@ -297,10 +299,10 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
     /**
      * @param null $id
-     * @param array $projection
+     * @param array $selection
      * @return Loupe
      */
-    public function find( $id, array $projection = ['*'] )
+    public function find($id, array $selection = ['*'])
     {
         $field = $this->hasJoin ? $this->table . '.' . $this->primaryKey : $this->primaryKey;
 
@@ -310,22 +312,27 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
             $this->where($field, $id);
         }
 
-        return $this->get($projection);
+        return $this->get($selection);
     }
 
     /**
      * find all records
      *
-     * @param array $projection
+     * @param array $selection
      * @return Loupe
      */
-    public function all(array $projection = ["*"])
+    public function all(array $selection = ["*"])
     {
-
         $this->findAll = true;
+        $this->get($selection);
 
-        return $this->get($projection);
-
+        if ($this->count > 1) {
+            return $this;
+        } else {
+            $collection = new Collection([$this->attributes]);
+            $this->attributes = $collection;
+            return $this;
+        }
     }
 
     /**
@@ -343,7 +350,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param string $comparison
      * @return $this
      */
-    public function where( $field, $binding, $comparison = "=" )
+    public function where($field, $binding, $comparison = "=")
     {
         $statement = $this->getStatement();
 
@@ -362,9 +369,8 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param string $comparison
      * @return $this
      */
-    public function orWhere( $field, $binding, $comparison = "=" )
+    public function orWhere($field, $binding, $comparison = "=")
     {
-
         $statement = $this->getStatement();
 
         $value = $this->getNamedParam();
@@ -378,11 +384,11 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
     /**
      * @param $field
-     * @param $bindingA
-     * @param $bindingB
+     * @param $fromDate
+     * @param $toDate
      * @return $this
      */
-    public function between( $field, $bindingA, $bindingB )
+    public function between($field, $fromDate, $toDate)
     {
         $statement = $this->getStatement();
 
@@ -392,8 +398,8 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
         $statement->setBetween($field, $value, $valueB);
 
-        $statement->setBindings($value, $bindingA);
-        $statement->setBindings($valueB, $bindingB);
+        $statement->setBindings($value, $fromDate);
+        $statement->setBindings($valueB, $toDate);
 
         return $this;
     }
@@ -405,7 +411,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param $bindings
      * @return $this
      */
-    public function whereIn( $field, array $bindings )
+    public function whereIn($field, array $bindings)
     {
         $statement = $this->getStatement();
 
@@ -425,11 +431,11 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @return $this
      * @throws ModelException
      */
-    public function join($leftField, $rightField, $leftTable = null, $joinType = 'inner' ) {
+    public function join($leftField, $rightField, $leftTable = null, $joinType = 'inner') {
 
         $this->hasJoin = true;
 
-        if ( !$this->fieldIsDotted($rightField) && is_null($leftTable)) {
+        if (!$this->fieldIsDotted($rightField) && is_null($leftTable)) {
             throw new ModelException('You must specify a table for at least the right field when
             $leftTable is null. i.e. "rightTable.rightField"');
         }
@@ -465,8 +471,8 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param $rightField
      * @return $this|Loupe
      */
-    public function leftJoin($leftField, $rightField, $rightTable = null ) {
-        return $this->join( $leftField, $rightField, $rightTable, 'left' );
+    public function leftJoin($leftField, $rightField, $rightTable = null) {
+        return $this->join($leftField, $rightField, $rightTable, 'left');
     }
 
     /**
@@ -476,23 +482,23 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param $rightField
      * @return $this|Loupe
      */
-    public function rightJoin( $leftField, $rightField, $rightTable = null ) {
-        return $this->join( $leftField, $rightField, $rightTable, 'right' );
+    public function rightJoin($leftField, $rightField, $rightTable = null) {
+        return $this->join($leftField, $rightField, $rightTable, 'right');
     }
 
     /**
      * @param null $column
      * @return int
      */
-    public function count( $column = null )
+    public function count($column = null)
     {
-        if ( is_null($column)) {
+        if (is_null($column)) {
             $column = $this->primaryKey;
         }
-        $this->get( [ "COUNT($column)" ] );
+        $this->get([ "COUNT($column)" ]);
 
         $arAttributes = iterator_to_array($this->attributes);
-        $count = reset( $arAttributes );
+        $count = reset($arAttributes);
 
         $this->attributes = new Attributes();
         $this->count = intval($count);
@@ -502,15 +508,16 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     /**
      * Save or update a model
      *
-     * @param null $attributes
+     * @param array|null $attributes
      * @return bool
-     *
      * @throws ModelException
      */
-    public function save($attributes = NULL)
+    public function save(array $attributes = null)
     {
         if (is_null($attributes)) {
             $attributes = $this->attributes;
+        } else {
+            $attributes = new Attributes($attributes);
         }
 
         if (empty((array) $attributes)) {
@@ -532,7 +539,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         $statement = $this->getStatement();
 
         $propertyNames = array();
-        foreach($attributes as $property => $value ) {
+        foreach($attributes as $property => $value) {
 
             $bind = $this->getNamedParam();
             $propertyNames[$bind] = $property;
@@ -557,7 +564,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     {
         $conn = $this->getConnection();
 
-        if ( !is_null($primaryKey) ) {
+        if (!is_null($primaryKey)) {
 
             $primaryKeyBind = $this->getNamedParam();
 
@@ -573,7 +580,6 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
             $this->attributes->{$this->primaryKey} = $primaryKey;
 
         } else {
-
             $this->query = $statement->getInsert($propertyNames);
             $action = $conn->prepare($this->query);
         }
@@ -584,11 +590,11 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     /**
      * Setup the proper value for the updated_at and created_at columns.
      *
-     * @param $attributes
+     * @param Attributes $attributes
      */
-    private function setupTimeStamp(&$attributes)
+    private function setupTimeStamp(Attributes $attributes)
     {
-        if ( $this->customTime === false ) {
+        if ($this->customTime === false) {
 
             $date = new \DateTime();
 
@@ -789,7 +795,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param null $displayAs
      * @return $this
      */
-    public function concat($concatenatedFields, $displayAs = null )
+    public function concat($concatenatedFields, $displayAs = null)
     {
         $concat = !is_null($displayAs) ? "($concatenatedFields) $displayAs" : "($concatenatedFields)";
 
@@ -811,7 +817,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
                 return $this->attributes->{$property};
             }
         }
-        return NULL;
+        return null;
     }
 
     /**
@@ -895,7 +901,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      */
     private function setAttributes(StatementManager $statement, Statement $statementBuilder)
     {
-        if ( $this->count ) {
+        if ($this->count) {
             if ($this->count === 1) {
                 $properties = $statement->fetch();
                 foreach ($properties as $property => $value) {
@@ -911,7 +917,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
                             }
                         }
                     }
-                    if ( !isset($this->attributes->{$property} )) {
+                    if (!isset($this->attributes->{$property})) {
                         $this->attributes->{$property} = $value;
                     }
                 }
@@ -942,11 +948,11 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
         $result = array();
 
-        if ( !$this->count ) {
+        if (!$this->count) {
 
             return false;
 
-        } elseif ($this->count === 1 ) {
+        } elseif ($this->count === 1) {
 
             $result[] = $this->attributes->toArray();
 
@@ -955,7 +961,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
             $rowList = iterator_to_array($this->attributes);
 
             /** @var Attributes $attribute */
-            foreach ( $rowList as $attribute ) {
+            foreach ($rowList as $attribute) {
                 $result[] = $attribute->toArray();
             }
         }
@@ -964,19 +970,28 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     }
 
     /**
+     * Return attributes as json string.
+     *
+     * @return string
+     */
+    public function toJson()
+    {
+        return json_encode($this->toArray());
+    }
+
+    /**
      * @return mixed
      */
     public function first()
     {
-        $arAttributes = iterator_to_array($this->attributes);
-        return reset($arAttributes);
+        return $this->limit(1)->get();
     }
 
     /**
      * @param $relationship
      * @return $this
      */
-    public function with( $relationship )
+    public function with($relationship)
     {
         if (method_exists($this, $relationship)) {
 
@@ -1017,7 +1032,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param $relationship
      * @return $this
      */
-    public function withOnly( $relationship )
+    public function withOnly($relationship)
     {
         $this->$relationship();
 
@@ -1061,7 +1076,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param null $localKey
      * @return $this
      */
-    public function hasOne($relatedModel, $foreignKey = null, $localKey = null )
+    public function hasOne($relatedModel, $foreignKey = null, $localKey = null)
     {
         $this->relatedModel = new $relatedModel;
 
@@ -1083,7 +1098,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @return $this
      * @throws ModelException
      */
-    public function hasMany( $relatedModel, $foreignKey = null, $localKey = null )
+    public function hasMany($relatedModel, $foreignKey = null, $localKey = null)
     {
 
         $this->relatedModel = new $relatedModel;
@@ -1105,7 +1120,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @param null $localKey
      * @return $this
      */
-    public function belongsTo($relatedModel, $foreignKey = null, $localKey = null )
+    public function belongsTo($relatedModel, $foreignKey = null, $localKey = null)
     {
 
         $this->relatedModel = new $relatedModel;
@@ -1115,7 +1130,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         $this->localKey = !is_null($localKey) ? $localKey : $this->primaryKey;
         $this->foreignKey = !is_null($foreignKey) ? $foreignKey : $this->model . '_id' ;
 
-        $this->rightJoin( $this->localKey, $this->relatedModel->table . '.' . $this->foreignKey );
+        $this->rightJoin($this->localKey, $this->relatedModel->table . '.' . $this->foreignKey);
 
         return $this;
 
@@ -1132,9 +1147,9 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      */
     public function belongsToMany(
         $relatedModel,
-        $pivotTable = NULL,
-        $pivotTableLeftKey = NULL,
-        $pivotTableRightKey = NULL) {
+        $pivotTable = null,
+        $pivotTableLeftKey = null,
+        $pivotTableRightKey = null) {
 
         $this->relatedModel = new $relatedModel();
 
@@ -1143,7 +1158,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         $relatedTable = $this->relatedModel->table;
         $relatedTablePrimaryKey = $this->relatedModel->primaryKey;
 
-        if ( is_null($pivotTable) ) {
+        if (is_null($pivotTable)) {
             $arr_tables = [$this->table, $relatedTable];
             sort($arr_tables);
             $this->pivotTable = implode('_', $arr_tables);
@@ -1154,8 +1169,8 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         $pivotTableLeftKey = is_null($pivotTableLeftKey) ? $this->relatedModel->model . '_id' : $pivotTableLeftKey;
         $pivotTableRightKey = is_null($pivotTableRightKey) ? $this->model . '_id' : $pivotTableRightKey;
 
-        $this->join( $this->primaryKey, $pivotTableRightKey, $this->pivotTable )
-            ->join( $this->pivotTable . '.' . $pivotTableLeftKey,
+        $this->join($this->primaryKey, $pivotTableRightKey, $this->pivotTable)
+            ->join($this->pivotTable . '.' . $pivotTableLeftKey,
                 $relatedTable  . '.' . $relatedTablePrimaryKey, $relatedTable);
 
         return $this;
@@ -1184,8 +1199,8 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
         $this->pushRelationships($this->relatedModel);
 
-        $this->join( $throughModel->primaryKey, $throughModel->table . '.' . $throughModelLocalKey )
-            ->join( $throughModel->table . '.' . $throughModelKey, $table . '.' . $this->relatedModel->primaryKey );
+        $this->join($throughModel->primaryKey, $throughModel->table . '.' . $throughModelLocalKey)
+            ->join($throughModel->table . '.' . $throughModelKey, $table . '.' . $this->relatedModel->primaryKey);
 
         return $this;
     }
@@ -1239,7 +1254,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         $className = strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $ObjectName));
         $tableName = Inflect::pluralize($className);
 
-        $mem->add($class . '-table-name', $tableName, 1440 );
+        $mem->add($class . '-table-name', $tableName, 1440);
 
         return $tableName;
     }
@@ -1260,7 +1275,6 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
             }
             $i++;
         }
-
         return $Associative;
     }
 
@@ -1275,21 +1289,15 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     public function transaction(callable $closure) {
 
         $con = $this->getConnection();
-
         $con->beginTransaction();
 
         try {
-
             $closure($this);
-
             $con->commit();
-
             return $this;
 
         } catch (\Exception $e) {
-
             $con->rollBack();
-
             throw $e;
         }
     }
@@ -1305,13 +1313,11 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     public function dryRun(callable $closure) {
 
         $con = $this->getConnection();
-
         $con->beginTransaction();
 
         $closure();
 
         $con->rollBack();
-
         return $this;
     }
 
@@ -1320,7 +1326,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      */
     public function getIterator() {
 
-        return new \ArrayIterator( $this->attributes );
+        return new \ArrayIterator($this->attributes);
 
     }
 }

@@ -65,10 +65,10 @@ class usersController extends Controller
                     ->groupConcat(['roles.name' => 'roles'])->get(['users.*']);
             }
             if ($user->count) {
-                View::render('user/view_user', ['user' => $user->attributes]);
+                return View::render('user/view_user', ['user' => $user->attributes]);
             }
             else {
-                View::render('errors/error', 'Page not found', 404);
+                return View::render('errors/error', 'Page not found', 404);
             }
         }
         else {
@@ -132,7 +132,7 @@ class usersController extends Controller
                     }
                 }
 
-                View::render('user/create', $arRoles);
+                return View::render('user/create', $arRoles);
             }
         }
 
@@ -177,7 +177,7 @@ class usersController extends Controller
             $this->redirect('/users');
         }
         else {
-            View::render('login/index', array());
+            return View::render('login/index', array());
         }
     }
 
@@ -199,11 +199,10 @@ class usersController extends Controller
 
     public function allUsers()
     {
-
         $users = new User();
         $users->all();
 
-        View::render('user/view_user', ['users' => $users->attributes]);
+        return View::render('user/view_user', ['users' => $users->attributes]);
     }
 
     /**

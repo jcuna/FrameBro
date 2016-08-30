@@ -16,7 +16,7 @@ function ddd() {
 
     $args = func_get_args()[0];
 
-    if (count($args) === 1) {
+    if (is_array($args) && count($args) === 1) {
         $args = $args[0];
     }
 
@@ -87,7 +87,7 @@ function shiftElement(&$array, $oldPos, $pos)
 
 /**
  * Set up an ajax request call with our ajax request provider.
- * 
+ *
  * @param array $data
  */
 function ajaxRequest(array $data)

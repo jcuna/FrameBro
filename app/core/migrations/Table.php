@@ -58,7 +58,6 @@ class Table
      * @param $tableName
      * @param Statement $statement
      * @param bool $custom
-     * @param bool $alter
      */
     public function __construct($tableName, Statement $statement, $custom = false)
     {
@@ -70,7 +69,10 @@ class Table
             $this->stm->create();
         }
     }
-    
+
+    /**
+     * @param $collate
+     */
     public function setCollate($collate)
     {
         $this->collate = $collate;
@@ -251,7 +253,8 @@ class Table
 
     /**
      * @param $name
-     * @param string $length
+     * @param int $m
+     * @param int $d
      * @return $this
      */
     public function decimal($name, $m = 5, $d = 2)
@@ -264,7 +267,8 @@ class Table
 
     /**
      * @param $name
-     * @param string $length
+     * @param int $m
+     * @param int $d
      * @return $this
      */
     public function double($name, $m = 15, $d = 8)
@@ -289,7 +293,8 @@ class Table
 
     /**
      * @param $name
-     * @param string $precision
+     * @param int $m
+     * @param int $d
      * @return $this
      */
     public function float($name, $m = 10, $d = 2)
@@ -500,7 +505,10 @@ class Table
         $this->stm->renameColumn($columnName, $type, $newName);
         
     }
-    
+
+    /**
+     * @return $this
+     */
     public function change()
     {
         $this->stm->setAlterModify();
@@ -531,5 +539,4 @@ class Table
     {
         return $this->renamedColumns;
     }
-
 }

@@ -21,7 +21,7 @@ class Routes
      *
      * @var array
      */
-    private static $routes = array();
+    private static $routes = [];
 
     /**
      * If declared in the routes, contains the action to be taken when a page is missing.
@@ -41,21 +41,21 @@ class Routes
      *
      * @var array
      */
-    public $arUri = array();
+    public $arUri = [];
 
     /**
      * Parts of the uri that are arguments
      *
      * @var array
      */
-    public $arguments = array();
+    public $arguments = [];
 
     /**
      * Static copy of @$arguments.
      *
      * @var array
      */
-    public static $args = array();
+    public static $args = [];
 
     /**
      * The registered controller
@@ -102,7 +102,7 @@ class Routes
      */
     public function callMissingPage()
     {
-        if (!empty( self::$missing)) {
+        if (!empty(self::$missing)) {
             return call_user_func(self::$missing);
         } else {
             return !ddd(['No controller', debug_backtrace()]);
@@ -139,7 +139,7 @@ class Routes
      * @param $endpoint
      * @param $via array
      */
-    protected static function get($route, $endpoint, array $via = array('via' => NULL)) {
+    protected static function get($route, $endpoint, array $via = ['via' => NULL]) {
         self::all($route, $endpoint, $via, 'GET');
     }
 
@@ -148,7 +148,7 @@ class Routes
      * @param $endpoint
      * @param $via array
      */
-    protected static function post($route, $endpoint, array $via = array('via' => NULL)) {
+    protected static function post($route, $endpoint, array $via = ['via' => NULL]) {
         self::all($route, $endpoint, $via, 'POST');
     }
 
@@ -159,7 +159,7 @@ class Routes
      * @param $via array
      * @throws AppException
      */
-    protected static function all($route, $endpoint, array $via = array('via' => NULL), $method = 'ALL') {
+    protected static function all($route, $endpoint, array $via = ['via' => NULL], $method = 'ALL') {
 
         if (is_callable($endpoint)) {
             self::$routes[] = [
@@ -193,7 +193,7 @@ class Routes
      * @throws AppException
      */
     public static function resources($route, $controller, array $actions) {
-        foreach( $actions as $methods ) {
+        foreach($actions as $methods) {
             foreach ($methods as $method => $action) {
                 $method = strtoupper($method);
 
@@ -226,20 +226,20 @@ class Routes
         $this->uri = $url[0] = $requestedURL = '/';
 
         //Apache
-        if ( isset($_GET['url'] )) {
+        if (isset($_GET['url'])) {
 
             $requestedURL = $_GET['url'];
             unset($_GET['url']);
 
         // NGINX
-        } elseif ( isset($_SERVER['REQUEST_URI']) ) {
+        } elseif (isset($_SERVER['REQUEST_URI'])) {
             $requestedURL = $_SERVER['REQUEST_URI'];
         }
 
-        if ( $requestedURL !== '/' ) {
+        if ($requestedURL !== '/') {
 
             $this->uri = trim($requestedURL, '/');
-            $url = explode( '/', filter_var( $this->uri , FILTER_SANITIZE_URL ));
+            $url = explode('/', filter_var( $this->uri , FILTER_SANITIZE_URL));
 
         }
 
@@ -271,13 +271,13 @@ class Routes
                 $v['route']
             );
 
-            if ( $key !== $v['route']) {
+            if ($key !== $v['route']) {
                 self::$routes[$k]['pattern'] = $key;
 
                 /** if we have a literal match, let's assign controller and method already. */
-            } elseif ( $v['route'] === $this->uri ) {
+            } elseif ($v['route'] === $this->uri) {
                 $usePattern = false;
-                if ( $method === $v['method'] || $v['method'] === 'ALL' ) {
+                if ($method === $v['method'] || $v['method'] === 'ALL') {
                     $this->controller = $v['controller'];
                     $this->action = $v['action'];
 
@@ -296,7 +296,7 @@ class Routes
          * @var  $g
          * here we will match patterns and only search for routes with patterns..
          */
-        if ( $usePattern ) {
+        if ($usePattern) {
             foreach (self::$routes as $k => $g) {
                 if (isset($g['pattern']) && preg_match("@" . $g['pattern'] . "$@i", $this->uri)) {
                     if ($method === $g['method'] || $g['method'] === 'ALL') {
@@ -327,7 +327,7 @@ class Routes
     {
         $routeFile = STORAGE_PATH . 'routes/route';
 
-        if ( !file_exists( $routeFile ) || ( filemtime(ROUTER_FILE) > filemtime($routeFile)) ) {
+        if (!file_exists($routeFile) || ( filemtime(ROUTER_FILE) > filemtime($routeFile))) {
 
             if (!file_exists(STORAGE_PATH . 'routes')) {
                 if ( !mkdir(STORAGE_PATH . 'routes' )) {
@@ -336,12 +336,12 @@ class Routes
                 }
             }
 
-            $route = file_get_contents( ROUTER_FILE );
+            $route = file_get_contents(ROUTER_FILE);
 
             Interpreter::extendInterpreter('Routes', 'self', true);
             $newFile = Interpreter::parseView($route);
 
-            if ( !file_put_contents($routeFile, $newFile )) {
+            if (!file_put_contents($routeFile, $newFile)) {
                 throw new AppException('Failed creating routes file in ' . $routeFile .
                     ' make sure the web server has permission to do so.');
             }
@@ -362,8 +362,8 @@ class Routes
 
         $result = '';
 
-        foreach( self::$routes as $route ) {
-            if ( $route[$key] === $value) {
+        foreach(self::$routes as $route) {
+            if ($route[$key] === $value) {
                 $result = $route;
                 break;
             }
@@ -380,9 +380,13 @@ class Routes
             new static;
         }
 
-        $routes = array();
-        foreach( self::$routes as $route ) {
-            $routes[] = [ 'Route' => $route['route'], 'Method' => $route['method'], 'Via' => $route['via'] ];
+        $routes = [];
+        foreach(self::$routes as $route) {
+            $routes[] = [
+                'Route' => $route['route'],
+                'Method' => $route['method'],
+                'Via' => $route['via']
+            ];
         }
         return $routes;
     }

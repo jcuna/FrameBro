@@ -1,8 +1,8 @@
 <?php
 /**
-* Author: Jon Garcia
-* Date: 1/25/16
-**/
+ * Author: Jon Garcia
+ * Date: 1/25/16
+ **/
 
 namespace App\Core\Ajax;
 
@@ -66,12 +66,16 @@ class AjaxRequest
      * @param array $data
      * @throws AppException
      */
-	public static function ajaxQueue(array $data)
-	{
+    public static function ajaxQueue(array $data)
+    {
         global $url;
 
-        if (!isset($data['class']) && isset(debug_backtrace()[2]['class'])) {
-            $data['class'] = debug_backtrace()[2]['class'];
+        if (!isset($data['class'])) {
+            if (debug_backtrace()[1]['function'] === 'ajaxRequest' && isset(debug_backtrace()[2]['class'])) {
+                $data['class'] = debug_backtrace()[2]['class'];
+            } elseif (isset(debug_backtrace()[1]['class'])) {
+                $data['class'] = debug_backtrace()[1]['class'];
+            }
         }
 
         self::validateAjaxRequest($data);
@@ -85,7 +89,7 @@ class AjaxRequest
         $data['url']   = $url;
 
         self::addToQueue($data);
-	}
+    }
 
     /**
      * @return string

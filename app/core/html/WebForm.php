@@ -252,11 +252,9 @@ class WebForm extends Markup
         }
         $field = '';
         $field .= !is_null($label) ? '<label for="' . $name . '">' . $label . '</label>' : '';
-	    $field .= '<input type="' . $type . '" name="' . $name . '" ';
+        $field .= '<input type="' . $type . '" name="' . $name . '" ';
         $field .= isset($attributes['value']) ? '' : 'value="' . $fieldValue . '"';
-        foreach($attributes as $attribute => $value) {
-            $field .= $attribute . '="' . $value . '"';
-        }
+        $field .= self::joinAttributes($attributes);
 
         if ($type === 'radio' || $type === 'checkbox') {
             if ( isset($attributes['value']) && ( $fieldValue == $attributes['value'] ||
@@ -264,7 +262,7 @@ class WebForm extends Markup
                 $field .= 'checked="checked"';
             }
         }
-	    $field .= '>' . $text;
+        $field .= '>' . $text;
         $field .= $hiddenFields;
         echo $field;
     }
@@ -280,12 +278,10 @@ class WebForm extends Markup
             $attributes['class'] = 'ckeditor';
         }
         $textarea = '';
-		$textarea .= '<label for="' . $name . '" class="">' . $label . '</label>';
-		$textarea .= '<textarea name="' . $name . '"';
-        foreach($attributes as $attribute => $value) {
-            $textarea .= $attribute . '="' . $value . '"';
-        }
-		$textarea .= '>' . self::get($name) . '</textarea>';
+        $textarea .= '<label for="' . $name . '" class="">' . $label . '</label>';
+        $textarea .= '<textarea name="' . $name . '"';
+        $textarea .= self::joinAttributes($attributes);
+        $textarea .= '>' . self::get($name) . '</textarea>';
         echo $textarea;
     }
 
@@ -314,9 +310,7 @@ class WebForm extends Markup
         $selectOptions .= isset($label) ? '<label for="' . $attributes['name'] . '">' . $label . '</label>' : '';
         $selectOptions .= '<select name="' . $name . '"';
 
-        foreach($attributes as $attribute => $value) {
-            $selectOptions .= $attribute . '="' . $value . '"';
-        }
+        $selectOptions .= self::joinAttributes($attributes);
         $selectOptions .= '>';
 
         if ($selectedVal == '') {
@@ -342,12 +336,37 @@ class WebForm extends Markup
 
     /**
      * @param string $value
-     * @param string $classes
+     * @param string $attributes
      */
-    public static function submit($value = 'Submit', $classes = 'btn btn-primary', $id = null)
+    public static function submit($value = 'Submit', $attributes = null)
     {
-        $id = is_null($id) ? '' : ' id="' . $id . '" ';
-        echo '<button type="submit" class="' . $classes . '"' . $id . '>' . $value . '</button>';
+        $attr = '';
+        $classes = 'btn btn-primary';
+        if (is_string($attributes)) {
+            $classes = $attributes;
+        } elseif (is_array($attributes)) {
+            if (isset($attributes['class'])) {
+                $classes = $attributes['class'];
+                unset($attributes['class']);
+            }
+            $attr = self::joinAttributes($attributes);
+        }
+
+        echo '<button type="submit" class="' . $classes . '"' . $attr . '>' . $value . '</button>';
+    }
+
+    /**
+     * @param $attributes
+     * @return string
+     */
+    public static function joinAttributes($attributes)
+    {
+        $string = '';
+        foreach($attributes as $attribute => $value) {
+            $string .= $attribute . '="' . $value . '"';
+        }
+
+        return $string;
     }
 
     /**

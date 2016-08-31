@@ -932,9 +932,6 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         } else {
             $this->SQLError = $statement->errorInfo();
             if (isset($this->SQLError[0]) && $this->SQLError[0] !== "00000") {
-
-                ddd([$this->SQLError, $this->SQL]);
-
                 throw new ModelException($this->SQLError[2], $this->SQLError[1]);
             }
             return $this;

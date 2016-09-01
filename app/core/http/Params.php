@@ -266,6 +266,25 @@ class Params implements Arrayable
     }
 
     /**
+     * @param $cookie
+     * @return bool
+     */
+    public static function hasCookie($cookie)
+    {
+        return isset($_COOKIE[$cookie]);
+    }
+
+    /**
+     * @param $cookie
+     * @return string
+     */
+    public static function getCookie($cookie)
+    {
+        return $_COOKIE[$cookie];
+    }
+
+
+    /**
      * @param $request
      */
     private function setPersistentAttributes($request)

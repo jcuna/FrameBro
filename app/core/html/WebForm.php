@@ -6,6 +6,7 @@
 namespace App\Core\Html;
 
 use App\Core\Http\Params;
+use App\Core\Model\Loupe;
 
 /**
  * Class WebForm
@@ -50,9 +51,8 @@ class WebForm extends Markup
     {
         foreach (self::$model as $objModel) {
 
-            if ($objModel instanceof $strModel) {
-
-                self::$values = $objModel->toArray()[0];
+            if ($objModel instanceof $strModel && $objModel instanceof Loupe) {
+                self::$values = $objModel->toArray();
             }
         }
     }

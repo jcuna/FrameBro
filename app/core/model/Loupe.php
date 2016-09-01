@@ -300,7 +300,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     /**
      * @param null $id
      * @param array $selection
-     * @return Loupe
+     * @return $this|Collection|Loupe
      */
     public function find($id, array $selection = ['*'])
     {
@@ -312,27 +312,39 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
             $this->where($field, $id);
         }
 
-        return $this->get($selection);
+        $collection = $this->get($selection);
+
+        if (!$collection->isEmpty()) {
+            if ($collection->count() === 1) {
+                return $collection->first();
+            } else {
+                return $collection;
+            }
+        }
+
+        return $this;
     }
 
     /**
      * find all records
      *
      * @param array $selection
-     * @return Loupe
+     * @return Collection
+     * @throws ModelException
      */
     public function all(array $selection = ["*"])
     {
-        $this->findAll = true;
-        $this->get($selection);
-
-        if ($this->count > 1) {
-            return $this;
-        } else {
-            $collection = new Collection([$this->attributes]);
-            $this->attributes = $collection;
-            return $this;
+        if (!empty(trim($this->getStatement()->getConditions()))) {
+            $trace = debug_backtrace()[0];
+            throw new ModelException(
+                "No conditions possible when getting all records",
+                8000,
+                $trace['file'],
+                $trace['line']
+            );
         }
+        $this->findAll = true;
+        return $this->get($selection);
     }
 
     /**
@@ -353,11 +365,9 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     public function where($field, $binding, $comparison = "=")
     {
         $statement = $this->getStatement();
-
         $value = $this->getNamedParam();
 
         $statement->setWhere($field, $comparison, $value);
-
         $statement->setBindings($value, $binding);
 
         return $this;
@@ -372,11 +382,9 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     public function orWhere($field, $binding, $comparison = "=")
     {
         $statement = $this->getStatement();
-
         $value = $this->getNamedParam();
 
         $statement->setOr($field, $comparison, $value);
-
         $statement->setBindings($value, $binding);
 
         return $this;
@@ -391,13 +399,10 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     public function between($field, $fromDate, $toDate)
     {
         $statement = $this->getStatement();
-
         $value = $this->getNamedParam();
-
         $valueB = $this->getNamedParam();
 
         $statement->setBetween($field, $value, $valueB);
-
         $statement->setBindings($value, $fromDate);
         $statement->setBindings($valueB, $toDate);
 
@@ -434,17 +439,20 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     public function join($leftField, $rightField, $leftTable = null, $joinType = 'inner') {
 
         $this->hasJoin = true;
-
         if (!$this->fieldIsDotted($rightField) && is_null($leftTable)) {
-            throw new ModelException('You must specify a table for at least the right field when
-            $leftTable is null. i.e. "rightTable.rightField"');
+            $trace = debug_backtrace()[0];
+            throw new ModelException(
+                'You must specify a table for at least the right field when
+                $leftTable is null. i.e. "rightTable.rightField"',
+                8000,
+                $trace['file'],
+                $trace['line']
+            );
         }
 
         $leftColumn = $this->fieldIsDotted($leftField) ? $leftField : $this->table . '.' . $leftField;
-
         $rightColumn = is_null($leftTable) ? $rightField :
             $this->fieldIsDotted($rightField) ? $rightField : $leftTable . '.' . $rightField;
-
         $leftTable = !is_null($leftTable) ? $leftTable : explode('.', $leftField)[0];
 
         $this->getStatement()->setJoin($joinType, $leftTable, $leftColumn, $rightColumn);
@@ -495,7 +503,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         if (is_null($column)) {
             $column = $this->primaryKey;
         }
-        $this->get([ "COUNT($column)" ]);
+        $this->get(["COUNT($column)"]);
 
         $arAttributes = iterator_to_array($this->attributes);
         $count = reset($arAttributes);
@@ -521,7 +529,14 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         }
 
         if (empty((array) $attributes)) {
-            throw new ModelException('No data to save');
+
+            $trace = debug_backtrace()[0];
+            throw new ModelException(
+                'No data to save',
+                8000,
+                $trace['file'],
+                $trace['line']
+            );
         }
 
         $this->setupTimeStamp($attributes);
@@ -537,7 +552,6 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         }
 
         $statement = $this->getStatement();
-
         $propertyNames = array();
         foreach($attributes as $property => $value) {
 
@@ -569,16 +583,12 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
             $primaryKeyBind = $this->getNamedParam();
 
             $statement->setBindings($primaryKeyBind, $primaryKey);
-
             $statement->setWhere($this->primaryKey, '=', $primaryKeyBind);
 
             $this->query = $statement->getUpdate($propertyNames);
-
             $action = $conn->prepare($this->query);
-
             //adding primary id back to $this.
             $this->attributes->{$this->primaryKey} = $primaryKey;
-
         } else {
             $this->query = $statement->getInsert($propertyNames);
             $action = $conn->prepare($this->query);
@@ -646,9 +656,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         }
 
         $this->query = $statement->getMultiInsert($columns, $bindingValueHash);
-
         $conn = $this->getConnection();
-
         $query = $conn->prepare($this->query);
 
         return $this->execute($query, $statement);
@@ -664,7 +672,13 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         $conn = $this->getConnection();
 
         if (!isset($this->attributes->{$this->primaryKey})) {
-            Throw new ModelException('No object has been loaded');
+            $trace = debug_backtrace()[0];
+            throw new ModelException(
+                'No object has been loaded',
+                8000,
+                $trace['file'],
+                $trace['line']
+            );
         }
         $key = $this->attributes->{$this->primaryKey};
 
@@ -675,7 +689,6 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         $statement->setBindings($bind, $key);
 
         $this->query = $statement->getDelete();
-
         $delete = $conn->prepare($this->query);
 
         return $this->execute($delete, $statement);
@@ -706,7 +719,13 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
             $this->SQLError = $action->errorInfo();
             if (isset($this->SQLError[0]) && $this->SQLError[0] !== "00000") {
-                throw new ModelException($this->SQLError[2], $this->SQLError[1]);
+                $trace = debug_backtrace()[0];
+                throw new ModelException(
+                    $this->SQLError[2],
+                    $this->SQLError[1],
+                    $trace['file'],
+                    $trace['line']
+                );
             }
             return false;
         }
@@ -844,7 +863,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
     /**
      * @param array $fields
-     * @return $this
+     * @return Collection
      * @throws ModelException
      */
     public function get(array $fields = ['*'])
@@ -866,12 +885,12 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
         $this->count = intval($query->rowCount());
 
-        $this->setAttributes($query, $statement);
+        $collection = $this->setAttributes($query, $statement);
 
         //Binds this model to the WebForm class for auto field binding
         WebForm::modelBinding($this);
 
-        return $this;
+        return $collection;
     }
 
     /**
@@ -887,7 +906,38 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
 
         $this->SQLError = $query->errorInfo();
         if (isset($this->SQLError[0]) && $this->SQLError[0] !== "00000") {
-            throw new ModelException($this->SQLError[2], $this->SQLError[1]);
+            $trace = debug_backtrace()[0];
+            throw new ModelException(
+                $this->SQLError[2],
+                $this->SQLError[1],
+                $trace['file'],
+                $trace['line']
+            );
+        }
+    }
+
+    /**
+     * @param Loupe $model
+     * @param array $fetchedArray
+     * @param null $concatProperty
+     */
+    private function BuildModelFromFetchedData(Loupe $model, array $fetchedArray, $concatProperty = null)
+    {
+        foreach ($fetchedArray as $property => $value) {
+            if ($property === $this->primaryKey && is_null($value)) {
+                $this->count = 0;
+                continue;
+            }
+            if (!is_null($concatProperty)) {
+                foreach($concatProperty as $propName) {
+                    if ($propName === $property) {
+                        $model->attributes->{$property} = explode(',', $value);
+                    }
+                }
+            }
+            if (!isset($model->attributes->{$property})) {
+                $model->attributes->{$property} = $value;
+            }
         }
     }
 
@@ -896,77 +946,50 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      *
      * @param StatementManager $statement
      * @param Statement $statementBuilder
-     * @return $this
+     * @return Collection
      * @throws ModelException
      */
     private function setAttributes(StatementManager $statement, Statement $statementBuilder)
     {
-        if ($this->count) {
-            if ($this->count === 1) {
-                $properties = $statement->fetch();
-                foreach ($properties as $property => $value) {
-                    if ($property === $this->primaryKey && is_null($value)) {
-                        $this->count = 0;
-                        unset($this->properties);
-                        return false;
-                    }
-                    if ($concatProperty = $statementBuilder->getQueryClause('group_concat_property')) {
-                        foreach($concatProperty as $val) {
-                            if ($val === $property) {
-                                $this->attributes->{$property} = explode(',', $value);
-                            }
-                        }
-                    }
-                    if (!isset($this->attributes->{$property})) {
-                        $this->attributes->{$property} = $value;
-                    }
-                }
-            } else {
-                $attributes = array();
-                while ($attribute = $statement->fetchObject('\\App\\Core\\Model\\Attributes')) {
-                    $attributes[] = $attribute;
-                }
-                $this->attributes = new Collection($attributes);
-            }
-            return $this;
-        } else {
+        $collection = new Collection();
+        $concatProperty = $statementBuilder->getQueryClause('group_concat_property');
+        if ($this->count === 0) {
             $this->SQLError = $statement->errorInfo();
             if (isset($this->SQLError[0]) && $this->SQLError[0] !== "00000") {
-
-                ddd([$this->SQLError, $this->SQL]);
-
-                throw new ModelException($this->SQLError[2], $this->SQLError[1]);
+                $trace = debug_backtrace()[0];
+                throw new ModelException(
+                    $this->SQLError[2],
+                    $this->SQLError[1],
+                    $trace['file'],
+                    $trace['line']
+                );
             }
-            return $this;
+            return $collection;
         }
+        if ($this->count === 1) {
+
+            $this->BuildModelFromFetchedData(
+                $this,
+                $statement->fetch(\PDO::FETCH_ASSOC),
+                $concatProperty
+            );
+            $collection->push($this);
+        } else {
+            while ($fetchedArray = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $model = new static;
+                $model->count = $this->count;
+                $this->BuildModelFromFetchedData($model, $fetchedArray, $concatProperty);
+                $collection->push($model);
+            }
+        }
+        return $collection;
     }
 
     /**
      * @return array|bool
      */
     public function toArray() {
-
-        $result = array();
-
-        if (!$this->count) {
-
-            return false;
-
-        } elseif ($this->count === 1) {
-
-            $result[] = $this->attributes->toArray();
-
-        } else {
-
-            $rowList = iterator_to_array($this->attributes);
-
-            /** @var Attributes $attribute */
-            foreach ($rowList as $attribute) {
-                $result[] = $attribute->toArray();
-            }
-        }
-
-        return $result;
+        return $this->attributes->toArray();
     }
 
     /**
@@ -980,11 +1003,17 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     }
 
     /**
-     * @return mixed
+     * @param array $selection
+     * @return $this|Loupe
      */
-    public function first()
+    public function first($selection = ["*"])
     {
-        return $this->limit(1)->get();
+        $collection = $this->limit(1)->get($selection);
+        if (!$collection->isEmpty()) {
+            return $collection->first();
+        }
+
+        return $this;
     }
 
     /**
@@ -994,14 +1023,11 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     public function with($relationship)
     {
         if (method_exists($this, $relationship)) {
-
             $this->$relationship();
 
         } else {
-
             $this->addJoinsFromRelatedModel($relationship);
         }
-
         return $this;
     }
 
@@ -1050,7 +1076,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * returns instance of another object via relationships.
      *
      * @param $relationship
-     * @return mixed
+     * @return Loupe
      */
     public function morphTo($relationship)
     {

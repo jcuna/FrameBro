@@ -20,7 +20,7 @@ class Statement {
      */
     private $clauses = [
         'groupBy'       => null,
-        'group_concat'  => array(),
+        'group_concat'  => [],
         'concat'        => null,
         'limit'         => null,
         'offset'        => null,
@@ -584,13 +584,17 @@ class Statement {
      * @param $key
      * @return bool | array
      */
+
+    /**
+     * @param $key
+     * @return null|array
+     */
     public function getQueryClause($key)
     {
         if (isset($this->clauses[$key])) {
             return $this->clauses[$key];
         }
-
-        return false;
+        return null;
     }
 
     /**

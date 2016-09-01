@@ -22,7 +22,9 @@ class usersController extends Controller
 
     /**
      * @param string $username
-     * @throws \Exception
+     * @return string
+     * @throws \App\Core\Exceptions\ModelException
+     * @throws \App\Core\Exceptions\ViewException
      */
     public function index ($username = '') {
 
@@ -74,14 +76,13 @@ class usersController extends Controller
         else {
             $this->redirect('/login');
         }
-	}
+    }
 
     /**
      * @throws \Exception
      */
     public function create()
     {
-
         if ($this->isLoggedIn() && View::hasRole(['Super Admin', 'Admin'])) {
 
             $params = new Params();
@@ -119,11 +120,10 @@ class usersController extends Controller
 
                 $this->displayFirstError();
 
-                $roles = new Role();
-                $roles->all();
+                $roles = (new Role())->all();
 
                 $arRoles = array();
-                foreach ($roles->attributes as $key => $attribute) {
+                foreach ($roles as $key => $attribute) {
                     if (!View::hasRole('Super Admin') && $attribute->name === 'Super Admin') {
                         unset($attribute->name);
                     }
@@ -140,16 +140,14 @@ class usersController extends Controller
             View::error('You don\'t have access to create users.');
             $this->redirect('/');
         }
-	}
+    }
 
     /**
      * @throws \Exception
      */
     public function login()
     {
-
         $params = new Params();
-
         $this->validate($params, [
             'username' => ['required'],
             'password' => ['required', 'minimum:6']
@@ -172,23 +170,25 @@ class usersController extends Controller
 
         $this->displayErrors();
 
-        $this->page_title = "TechDocs | Login";
         if ($this->isLoggedIn()) {
             $this->redirect('/users');
         }
-        else {
-            return View::render('login/index', array());
-        }
+
+        return View::render('login/index', array());
     }
 
+    /**
+     *
+     */
     public function tryLoginWithCookie()
     {
-        // run the loginWithCookie() method in the login-model, put the result in $login_successful (true or false)
         $user = new User();
         $user->loginWithCookie();
     }
 
-
+    /**
+     *
+     */
     public function logout()
     {
         $user = new User();
@@ -197,12 +197,14 @@ class usersController extends Controller
         }
     }
 
+    /**
+     * @return string
+     * @throws \App\Core\Exceptions\ModelException
+     */
     public function allUsers()
     {
-        $users = new User();
-        $users->all();
-
-        return View::render('user/view_user', ['users' => $users->attributes]);
+        $users = (new User())->all();
+        return View::render('user/view_user', ['users' => $users]);
     }
 
     /**
@@ -215,19 +217,28 @@ class usersController extends Controller
             $user = new User();
             $user->where('username', $params->user)->get();
             //if this user has a record on the roles_user pivot table delete it.
-            if ( $role = $user->morphTo('roles')->where('user_id', $user->uid)->get()) {
+            if ($role = $user->morphTo('roles')->where('user_id', $user->uid)->first()) {
                 $role->delete();
             }
             if ($user->delete()) {
                 if ($user->count == 1 ) {
-                    echo '{ "response": "success", "content": "<div class=\'user-deleted well\'>User has been deleted successfully</div>" }';
+                    return [
+                        "status" => "success",
+                        "content"  => '<div class=\'user-deleted well\'>User has been deleted successfully</div>'
+                    ];
                 }
                 else {
-                    echo '{ "response": "fail", "content": "<div class=\'user-not-deleted well\'>An unexpected problem occurred, please try again</div>" }';
+                    return [
+                        "status" => "fail",
+                        "content"  => '<div class=\'user-not-deleted well\'>An unexpected problem occurred, please try again</div>'
+                    ];
                 }
             }
         } else {
-            echo '{ "response": "fail", "content": "<div class=\'user-not-deleted well\'>You cannot delete yourself</div>" }';
+            return [
+                "status" => "fail",
+                "content"  => '<div class=\'user-not-deleted well\'>You cannot delete yourself</div>'
+            ];
         }
     }
 }

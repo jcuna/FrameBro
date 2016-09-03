@@ -158,6 +158,13 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     private $relatedModel;
 
     /**
+     * Hold previous query conditions
+     *
+     * @var array
+     */
+    private $conditions = [];
+
+    /**
      * Holds all related models
      *
      * @var array
@@ -869,7 +876,7 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
     public function get(array $fields = ['*'])
     {
         $statement = $this->getStatement();
-
+        $this->recordConditions($statement);
         $this->query = $statement->getQuery($fields);
 
         //reset distinct values
@@ -891,6 +898,17 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
         WebForm::modelBinding($this);
 
         return $collection;
+    }
+
+    /**
+     * @param Statement $statement
+     */
+    private function recordConditions(Statement $statement)
+    {
+        $this->conditions = [
+            "conditions" => $statement->getConditions(),
+            'bindings'  => $statement->getBindings()
+        ];
     }
 
     /**

@@ -340,15 +340,10 @@ class Statement {
     public static function getStatement($table)
     {
         if (isset(self::$statements[$table])) {
-
-            return self::$statements[$table];
-
-        } else {
-
-            self::$statements[$table] = new static($table);
-
             return self::$statements[$table];
         }
+
+        return self::$statements[$table] = new static($table);
     }
 
     /**
@@ -696,13 +691,11 @@ class Statement {
     public function getMultiInsert($columns, $bindingHash)
     {
         $strColumns = $this->concatenateStatement($columns);
-
         $bindings = $this->concatenateMultiValue($bindingHash);
 
         $this->reboot();
 
         return trim(self::INSERT . " $this->table ($strColumns) " . self::VALUES . " $bindings");
-
     }
 
     /**
@@ -783,7 +776,6 @@ class Statement {
      */
     private function getFrom()
     {
-
         return $this->getGroupConcatString() . self::FROM . " $this->table ";
     }
 
@@ -848,13 +840,9 @@ class Statement {
      */
     public function getConditions()
     {
-
         $strConditions = $this->getConcatString();
-
         $strConditions .= $this->getJoinsString();
-
         $strConditions .= $this->getWheres();
-
 
         if (!empty($this->clauses['groupBy'])) {
             $strConditions .= " {$this->clauses['groupBy']}";

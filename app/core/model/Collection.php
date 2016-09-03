@@ -88,4 +88,18 @@ class Collection extends \ArrayIterator implements Arrayable, Jsonable
     {
         return json_encode($this->toArray());
     }
+
+    /**
+     * @return Loupe
+     * @throws ModelException
+     */
+    public function current()
+    {
+        $current = parent::current();
+
+        if ($current instanceof Loupe) {
+            return $current;
+        }
+        throw new ModelException("Invalid type");
+    }
 }

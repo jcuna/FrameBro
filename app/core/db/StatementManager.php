@@ -51,7 +51,7 @@ class StatementManager
     /**
      * @param $name
      * @param $arguments
-     * @return mixed
+     * @return \PDOStatement
      */
     public function __call($name, $arguments)
     {

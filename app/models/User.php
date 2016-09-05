@@ -25,7 +25,7 @@ class User extends Loupe
         if (password_verify($params->password, $this->password)) {
             Session::init();
             Session::set('user_logged_in', true);
-            unset($this->attributes->password);
+            unset($this->password);
 
             foreach ($this as $property => $attribute) {
                 Session::set($property, $attribute);
@@ -52,7 +52,8 @@ class User extends Loupe
                 setcookie('login_cookie', $cookie_string, time() + (86400 * 14), "/");
                 return true;
             }
-        } else return false;
+        }
+        return false;
     }
 
     /**
@@ -69,14 +70,13 @@ class User extends Loupe
      */
     public function loginWithCookie()
     {
-        $cookie = isset($_COOKIE['login_cookie']) ? $_COOKIE['login_cookie'] : '';
-
         // do we have a cookie var ?
-        if (empty($cookie)) {
+        if (!Params::hasCookie("login_cookie")) {
             View::error('There was a problem logging you in automatically');
             return false;
         }
 
+        $cookie = Params::getCookie("login_cookie");
         // check cookie's contents, check if cookie contents belong together
         list($user_id, $token, $hash) = explode(':', $cookie);
         if ($hash !== hash('sha256', $user_id . ':' . $token)) {
@@ -92,7 +92,7 @@ class User extends Loupe
 
         $this->with('roles')->where('uid', $user_id)->where('login_token', $token)
             ->groupConcat(['roles.name' => 'roles'])
-            ->get(['users.*']);
+            ->first(['users.*']);
 
         if ($this->count === 1) {
 
@@ -135,6 +135,9 @@ class User extends Loupe
         setcookie('login_cookie', false, time() - (3600 * 3650), '/');
     }
 
+    /**
+     * @return bool
+     */
     public function logout()
     {
         setcookie('login_cookie', false, time() - (3600 * 3650), '/');
@@ -142,10 +145,3 @@ class User extends Loupe
         return true;
     }
 }
-
-
-
-
-
-
-

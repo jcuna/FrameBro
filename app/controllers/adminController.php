@@ -147,7 +147,7 @@ class adminController extends Controller
                     'name' => 'xattr Extension',
                     'message' => 'Loaded',
                     'value' => getenv('XATTR_SUPPORT'),
-                    'info' => ''
+                    'info' => '(Required to identify if a view has been updated)'
                 ],
                 'storageDirAccess' => [
                     'name' => 'Storage Directory',
@@ -160,7 +160,7 @@ class adminController extends Controller
                     'message' => 'Writable',
                     'value' => is_writable(FILES_PATH),
                     'info' => '| ' . FILES_PATH
-                    ],
+                ],
                 'osExtendedAttr' => [
                     'name' => 'OS Extended Attributes',
                     'message' => 'Supported or Enabled',
@@ -178,6 +178,12 @@ class adminController extends Controller
                     'message' => 'Loaded',
                     'value' => $memcache,
                     'info' => ''
+                ],
+                'SimpleXML' => [
+                    'name' => 'SimpleXML Library',
+                    'message' => 'Loaded',
+                    'value' => class_exists("\\SimpleXMLElement"),
+                    'info' => '(Required if using built-in ajax library)'
                 ]
             ];
 
@@ -213,13 +219,13 @@ class adminController extends Controller
             $params = new Params();
 
             $this->validate($params, [
-                'repeat-password' => ['sameAs:password'],
                 'username' => ['required', 'unique:users', 'minimum:5', 'message' => 'Username is not valid'],
                 'email' => ['required', 'email'],
                 'first-name' => ['required'],
                 'last-name' => ['required'],
                 'roles' => ['required'],
                 'password' => ['required', 'minimum:6'],
+                'repeat-password' => ['required', 'sameAs:password'],
             ]);
 
             if ($this->validated) {
@@ -245,11 +251,10 @@ class adminController extends Controller
 
                 $this->displayFirstError();
 
-                $roles = new Role();
-                $roles->all();
+                $roles = (new Role())->all();
 
                 $arRoles = [];
-                foreach ($roles->attributes as $key => $attribute) {
+                foreach ($roles as $attribute) {
                     if ($attribute->name !== 'Super Admin') {
                         unset($attribute->name);
                     } else {

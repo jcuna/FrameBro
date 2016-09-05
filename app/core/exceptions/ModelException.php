@@ -12,4 +12,14 @@ use App\Core\Api\BroExceptionsInterface;
 class ModelException extends \Exception implements BroExceptionsInterface
 {
 
+    public function __construct($message = "", $code = 0, $file = null, $line = null)
+    {
+        parent::__construct($message, $code);
+        if ($file) {
+            $this->file = $file;
+        }
+        if ($line) {
+            $this->line = $line;
+        }
+    }
 }

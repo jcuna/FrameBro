@@ -7,9 +7,7 @@ namespace App\Core;
 
 use App\Core\Ajax\AjaxController;
 use App\Core\Exceptions\AppException;
-use App\Core\Http\Params;
 use App\Core\Http\Routes;
-use App\Core\Api\BroExceptionsInterface;
 
 /**
  * Class App
@@ -69,11 +67,14 @@ class App {
 
                 if ( getenv('ENV') === 'dev' || getenv('ENV') === false ) {
 
-                    if (AjaxController::ajaxCallInProgress()) {
+                    $m = "Message: " . $e->getMessage();
+                    $l = "Line: " . $e->getLine();
+                    $f = "File: " . $e->getFile();
 
-                        ddd([$e->getMessage(), debug_backtrace()]);
+                    if (AjaxController::ajaxCallInProgress()) {
+                        ddd($m, $l, $f, $e);
                     }
-                    !+ddd([$e->getMessage(), debug_backtrace()]);
+                    !+ddd($m, $l, $f, $e);
                 }
                 else {
                     echo 'An error has occurred';
@@ -105,7 +106,7 @@ class App {
                 $l = "Line: " . $e->getLine();
                 $f = "File: " . $e->getFile();
 
-                +!dd($m, $l, $f, ['trace' => debug_backtrace()]);
+                !dd($m, $l, $f, $e);
 
             } else {
                 echo 'An error has occurred';

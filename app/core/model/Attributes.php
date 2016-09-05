@@ -38,9 +38,7 @@ class Attributes implements \IteratorAggregate, Arrayable
      * @return \ArrayIterator
      */
     public function getIterator() {
-
-        return new \ArrayIterator( $this );
-
+        return new \ArrayIterator($this);
     }
 
     /**
@@ -52,5 +50,4 @@ class Attributes implements \IteratorAggregate, Arrayable
     {
         return iterator_to_array($this);
     }
-
 }

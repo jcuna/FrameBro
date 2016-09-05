@@ -47,7 +47,6 @@
                                 <li><a href="/admin/memcachedStats" target="_blank">Memcached Stats</a></li>
                                 <li><a href="/admin/info" target="_blank">System Info</a></li>
                             </ul>
-                            <li><a href="/trucks">Equipos</a></li>
                             <?php endif;?>
                         </li>
                     </ul>

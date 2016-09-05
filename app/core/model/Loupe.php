@@ -1369,8 +1369,6 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @return \ArrayIterator
      */
     public function getIterator() {
-
-        return new \ArrayIterator($this->attributes);
-
+        return new \ArrayIterator($this->attributes->toArray());
     }
 }

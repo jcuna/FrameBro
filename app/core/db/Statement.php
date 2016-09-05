@@ -965,7 +965,10 @@ class Statement {
     {
         $key = $this->getCurrentQueryKey();
 
-        $subject = $this->query[$key]['grammar'];
+        $subject = '';
+        if (isset($this->query[$key]['grammar'])) {
+            $subject = $this->query[$key]['grammar'];
+        }
 
         $value = "DEFAULT " . $this->getDefault($value);
 

@@ -11,9 +11,7 @@ class homeController extends Controller
     public function index() {
 
         $this->createUserIfNoneExists();
-
-        return View::render('user.view_user');
-
+        $this->redirect('admin/statusReport');
     }
 
     /**
@@ -22,13 +20,16 @@ class homeController extends Controller
      */
     private function createUserIfNoneExists()
     {
-        $user = new User();
+        try {
+            $user = new User();
 
-        If ($user->count() === 0) {
-            $this->redirect('admin/firstUser');
-        } else {
-            return true;
+            If ($user->count() === 0) {
+                $this->redirect('admin/firstUser');
+            }
+        } catch (\Exception $e) {
+            $output = "Create a database, update the .env file and run migrations to use the built-in authentication,
+            or remove the code inside the index method in the homeController and create your own";
+            return View::render('admin.index', "<h2>".$output."</h2>");
         }
     }
-
 }

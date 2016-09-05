@@ -288,7 +288,8 @@ class Cli
                         $migration = basename($e->getTrace()[2]['file'], '.php');
 
                         $output = "Failed migrating $migration on $func" . PHP_EOL;
-                        $output .= "Error: " . $e->getCode() . " " . $e->getMessage();
+                        $output .= "Error: " . $e->getCode() . " " . $e->getMessage() . PHP_EOL;
+                        $output .= "file: " . $e->getFile() . " line: " . $e->getLine();
 
                         $this->output($output, 'red');
                     }

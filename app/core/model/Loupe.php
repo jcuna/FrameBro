@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Created By: Jon Garcia
  * Date: 1/13/16
@@ -1369,8 +1370,6 @@ abstract class Loupe implements ModelInterface, DatabaseAccessInterface, \Iterat
      * @return \ArrayIterator
      */
     public function getIterator() {
-
-        return new \ArrayIterator($this->attributes);
-
+        return new \ArrayIterator($this->attributes->toArray());
     }
 }

@@ -4,7 +4,7 @@
  * Date: 1/23/16
  * Time: 12:00 PM
  */
-
+declare(strict_types=1);
 namespace App\Core\Model;
 use App\Core\Api\Arrayable;
 
@@ -27,7 +27,7 @@ class Attributes implements \IteratorAggregate, Arrayable
     /**
      * @param $arAttributes
      */
-    private function setAttributes($arAttributes)
+    private function setAttributes(array $arAttributes)
     {
         foreach ($arAttributes as $prop => $value) {
             $this->{$prop} = $value;
@@ -37,7 +37,8 @@ class Attributes implements \IteratorAggregate, Arrayable
     /**
      * @return \ArrayIterator
      */
-    public function getIterator() {
+    public function getIterator(): \ArrayIterator
+    {
         return new \ArrayIterator($this);
     }
 
@@ -46,7 +47,7 @@ class Attributes implements \IteratorAggregate, Arrayable
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return iterator_to_array($this);
     }

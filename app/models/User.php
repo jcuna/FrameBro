@@ -25,7 +25,7 @@ class User extends Loupe
         if (password_verify($params->password, $this->password)) {
             Session::init();
             Session::set('user_logged_in', true);
-            unset($this->attributes->password);
+            unset($this->password);
 
             foreach ($this as $property => $attribute) {
                 Session::set($property, $attribute);

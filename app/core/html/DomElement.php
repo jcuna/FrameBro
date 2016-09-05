@@ -9,6 +9,8 @@ namespace App\Core\Html;
 
 
 use App\Core\Api\Arrayable;
+use App\Core\App;
+use App\Core\Exceptions\AppException;
 
 class DomElement implements Arrayable
 {
@@ -20,9 +22,15 @@ class DomElement implements Arrayable
     /**
      * DomElement constructor.
      * @param null $element
+     * @throws AppException
      */
     public function __construct($element = null)
     {
+        if (!class_exists("\\SimpleXMLElement")) {
+            throw new AppException("SimpleXMLElement class not available.
+            Please install he simpleXml library.");
+        }
+
         if (!is_null($element)) {
             try {
                 $this->setAttributes($element);
@@ -34,15 +42,16 @@ class DomElement implements Arrayable
 
     /**
      * @param $element
+     * @throws AppException
      */
     private function setAttributes($element)
     {
         $xml = new \SimpleXMLElement($element);
 
-        $this->text = (string) $xml;
+        $this->text = (string)$xml;
 
         foreach ($xml[0]->attributes() as $attr => $val) {
-            $this->{$attr} = (string) $val;
+            $this->{$attr} = (string)$val;
         }
     }
 

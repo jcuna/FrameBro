@@ -30,6 +30,21 @@ class Routes
     private static $missing;
 
     /**
+     * Valid request methods
+     * 
+     * @var array
+     */
+    private static $validRequestMethods = [
+        "DELETE",
+        "GET",
+        "PATCH",
+        "POST",
+        "PUT",
+        "OPTIONS",
+        "HEAD"
+    ];
+
+    /**
      * The requested uri
      *
      * @var string
@@ -150,6 +165,28 @@ class Routes
      */
     protected static function post($route, $endpoint, array $via = ['via' => NULL]) {
         self::all($route, $endpoint, $via, 'POST');
+    }
+
+    /**
+     * @param $name
+     * @param $arguments[0] = string $route
+     *        $arguments[1] = string $endpoint
+     *        $arguments[0] = array $via
+     * @throws AppException
+     */
+    public static function __callStatic($name, $arguments)
+    {
+        $method = strtoupper($name);
+
+        if (in_array($method, self::$validRequestMethods)) {
+            $via = ['via' => NULL];
+            if (isset($arguments[2])) {
+                $via = $arguments[2];
+            }
+            self::all($arguments[0], $arguments[1], $via, $method);
+        } else {
+            throw new AppException("Invalid method call $name");
+        }
     }
 
     /**

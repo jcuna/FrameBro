@@ -1,0 +1,257 @@
+.truck-data {
+    margin: 20px 0 20px;
+    background-color: #ccc;
+    padding: 10px;
+}
+
+.wc-selected,
+.truck-data span {
+    font-weight: bold;
+}
+
+.header-wrapper {
+    width: 70%;
+    float: left;
+}
+
+#load-gas-prices {
+    margin-top: 25px;
+    float: left;
+    width: 30%;
+}
+#load-gas-prices ul {
+    list-style: none;
+    padding-left: 0;
+}
+#load-gas-prices li {
+    padding: 10px 20px;
+    margin: 2px;
+    background-color: #121212;
+    color: #FFF;
+    font-weight: bold;
+}
+
+span.gas-price {
+    float: right;
+}
+
+.wc-header {
+    width: 100%;
+}
+
+.wc-day-column-header span {
+    width: 70px;
+    display: block;
+}
+
+.half {
+    display: inline-block;
+    width: 50%;
+}
+
+.gasoil-price {
+    display: inline-block;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* daily tasks */
+
+.tasks-table {
+    width: 100%;
+}
+
+.task-row-artifact {
+    height: 6px;
+    background-color: #21a2e0;
+}
+
+.task-row {
+    background-color: aliceblue;
+    padding: 0 10px 10px;
+    border: 2px solid #a9a9a9;
+    box-shadow: #d6d6d6 2px 2px;
+    margin: 0 0 20px;
+    position: relative;
+    word-wrap: break-word;
+    -moz-border-radius-bottomleft: 2px;
+    -webkit-border-bottom-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    -moz-border-radius-bottomright: 2px;
+    -webkit-border-bottom-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    padding-bottom: 6px;
+    text-align: center;
+}
+
+.task-row .task-header {
+    color: #21a2e0;
+
+}
+
+.task-row .task-header h3,
+.task-row .task-header h4 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.task-row .task-header {
+    width: 20%;
+}
+
+.task-row .task-group {
+    width: 38%;
+}
+
+.task-row .task-group span {
+    font-weight: bold;
+}
+
+.task-row .task-group,
+.task-row .task-header {
+    display: inline-block;
+}
+
+.task-summary {
+    float: right;
+    width: 300px;
+    background-color: #21a2e0;
+    color: #fff;
+    margin: 10px;
+    padding: 10px;
+    font-size: 18px;
+}
+
+.task-summary .price {
+    font-weight: bolder;
+}
+
+.task-summary .glyphicon-stats {
+    float: right;
+    font-size: 50px;
+}
+.task-row .glyphicon-edit {
+    float: right;
+    font-size: 20px;
+    margin-top: 5px;
+}
+
+.task-wrapper .fortnight-table .date-link {
+    font-size: 20px;
+    color: darkgray;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.task-wrapper .fortnight-table .date-link:hover {
+    text-decoration: underline;
+}
+
+.task-wrapper .statement-summary {
+    padding: 5px;
+}
+
+.new-single-task {
+    margin-bottom: 5px;
+}
+
+.alice-blue {
+    background-color: aliceblue;
+    border: 1px solid;
+    margin-bottom: 10px;
+}
+
+.right {
+    float: right;
+    margin-right: 10px;
+}
+
+.list-pair li {
+    font-weight: bold;
+    padding: 4px;
+    font-size: 18px;
+    display: inline-block;
+    width: 45%;
+}
+
+.list-pair ul {
+    border-bottom: 1px solid #e6e6e6;
+    padding-left: 0;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.fortnight-table .row-date td {
+    border: none;
+    width: 130px;
+    font-weight: bold;
+}
+
+.fortnight-table>tbody+tbody {
+    border: none;
+}
+.select-fortnight,
+.shift-fortnight {
+    padding: 5px;
+}
+.select-fortnight span,
+.shift-fortnight span {
+    display: block;
+}
+
+.expense-description {
+    font-weight: bold;
+    padding-left: 4px;
+    font-size: 18px;
+    margin: 0;
+}
+
+/**
+Mobile responsiveness
+**/
+
+@media screen and (max-width: 1090px) {
+    .header-wrapper,
+    #load-gas-prices
+    {
+        width: 100%;
+        float: none;
+    }
+
+    .buttons button {
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .buttons button.btn-info  {
+        width: 49.765%;
+    }
+
+    .buttons button.btn-primary  {
+        margin-top: 4px;
+        width: 33.05%;
+    }
+
+    .navbar-header .collapsed:before {
+        content: none;
+    }
+}
+
+@media screen and (max-width: 737px) {
+    .buttons button.btn-primary,
+    .buttons button.btn-info {
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    span.button-text {
+        display: none;
+    }
+
+    .table>tbody>tr>td.wc-day-column-header {
+        padding: 0;
+    }
+}

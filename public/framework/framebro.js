@@ -127,7 +127,7 @@ bro.complete( function (e) {
                  */
 
                 var jsMethod;
-                // if we want to override jquery method for this call
+                 // if we want to override jquery method for this call
                 if (typeof bro.jQueryMethodOverride !== "undefined") {
                     jsMethod = bro.jQueryMethodOverride;
                 } else {

@@ -413,3 +413,15 @@ body.loading .modal-loading {
 .add-more-button {
   margin-bottom: 20px;
 }
+
+.collapsible {
+    cursor: pointer;
+}
+
+.collapsible:before {
+    content: '- ';
+}
+
+.collapsed:before {
+    content: '+ '
+}

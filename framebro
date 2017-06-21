@@ -1,9 +1,43 @@
+#!/usr/bin/env php
 <?php
 
-define('ABSOLUTE_PATH', getcwd());
+namespace {
 
-require ABSOLUTE_PATH . '/app/libraries/globals.php';
-require ABSOLUTE_PATH . '/app/config/config.php';
-require ABSOLUTE_PATH . '/app/core/autoload.php';
+    use Dotenv\Dotenv;
 
-new \App\Core\Cli($argv);
+    require 'app/Core/App.php';
+
+    define('ABSOLUTE_PATH', getcwd() . DIRECTORY_SEPARATOR);
+
+    App::startErrorReporting();
+    App::setAutoLoader('vendor/autoload');
+
+    App::defineSettings([
+        "mail" => "app/config/mail",
+        "connections" => "app/config/connections",
+        "aliases" => "app/config/aliases",
+    ]);
+
+    App::main(function () {
+        /** @var App $this */
+        $this->import('app/Core/Libraries/globals');
+
+        if ($this->fileExists('.env')) {
+
+            $env = new Dotenv(ABSOLUTE_PATH);
+            $env->load();
+            $this->processConfigs();
+
+            $this->setTimeZone(getenv("TIMEZONE"));
+            try {
+                $this->fireApp();
+            } catch (\Throwable $e) {
+                App::dd($e);
+            }
+        } else {
+            print "no env file".PHP_EOL;
+            exit(1);
+        }
+
+    });
+}

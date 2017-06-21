@@ -35,14 +35,14 @@ You can use our globally available ajaxRequest function which is a wrapper for A
 
 
 ## Active Record Models and DB Migrations:
-Ruby developers love Ruby on Rails' take on Active Record, and polimorphism. We implement an Active Record pattern similar to Ruby On Rails.
+Ruby developers love Ruby on Rails' take on Active Record, we implement an Active Record pattern similar to Ruby On Rails.
 
 i.e
 ~~~~~~~~~~~~~~~~~~~~~
-$model->find(25); //finds by primary key id value. returns on model with property matching database values. passing an array of ids, will return a collection of models.
-$model->where('column', 'value')->get(); // returns a collection of models
-$model->all(); // returns all models inside a collection
-$model->save(); //saves current model with the updated data.
+$model->find(25);
+$model->where('column', 'value')->get();
+$model->all();
+$model->save();
 ~~~~~~~~~~~~~~~~~~~~~
 
 Migrations are just as easy using our Migrations Class.
@@ -98,17 +98,7 @@ i.e
 
 ~~~~~~~~~~~~~~~~~~~~~~~
 $params = new Params();
-// Using magic getters
-$id = $params->id;
-//is the same as
-$id = $params->get("id");
-
-// More available methods include
-$params->has("id");
-$params->hasFile("fileName");
-$params->hasAjax();
-$params->toArray();
-
+$id = $params->id
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 $id is now an argument sent via a POST or a GET request. If data sent is JSON data, it gets decoded automatically.

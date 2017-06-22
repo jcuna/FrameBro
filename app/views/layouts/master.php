@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= isset($data->page_title)?$data->page_title:'Framebro'; ?></title>
+    <title><?= isset($data->page_title) ? $data->page_title: App::env("APP_NAME"); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <meta name="Generator" content="Framebro">
     <meta name="Author" content="Jon Cuna">

@@ -222,7 +222,8 @@ class Router
         /** @var Route $route */
         foreach (self::$routes as $route) {
             if ($route->getOptions()["via"] === $alias) {
-                return $route->getRoute();
+                $path = $route->getRoute();
+                return $path === "/" ? $path : "/{$path}";
             }
         }
 

@@ -92,9 +92,10 @@ class Router
      */
     public static function group(array $options, callable $callable)
     {
-        self::$groupOptions = $options;
+        $current = self::$groupOptions;
+        self::$groupOptions = array_merge(self::$groupOptions, $options);
         $callable();
-        self::$groupOptions[] = [];
+        self::$groupOptions[] = $current;
     }
 
     /**
@@ -165,7 +166,8 @@ class Router
     private static function addRoute(string $route, $endpoint, array $options = [], string $method)
     {
         if (isset(self::$groupOptions["prefix"])) {
-            $route = rtrim(self::$groupOptions['prefix'], "/")."/".$route;
+            $postfix = $route === "/" ? "" :"/{$route}";
+            $route = rtrim(self::$groupOptions['prefix'], "/").$postfix;
         }
         $routeObj = new Route($route, $endpoint, $options, $method);
         foreach (self::$groupOptions as $key => $value) {

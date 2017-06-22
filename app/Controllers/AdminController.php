@@ -20,10 +20,8 @@ class AdminController extends Controller
     /**
      * @throws \Exception
      */
-    public function index()
+    public function index(Request $params)
     {
-        $params = new Request();
-
         if ($this->isLoggedIn()) {
 
             $this->validate($params, [
@@ -37,17 +35,15 @@ class AdminController extends Controller
             $files = $this->getDirectoryFiles( FILES_PATH . 'images/uploads');
 
             ajaxRequest(
-                array(
+                [
                     'callback' => 'deleteFiles',
                     'selector' => '.delete-file',
                     'event' => 'click',
                     'wrapper' => '#file-manager',
-                )
-            );
+                ]);
 
             return View::render('admin/file_upload', $files);
-        }
-        else {
+        } else {
             $this->redirect('/');
         }
     }
@@ -55,8 +51,7 @@ class AdminController extends Controller
     /**
      * @return string
      */
-    public function deleteFiles( ) {
-        $params = new Request();
+    public function deleteFiles(Request $params) {
         $params = $params->all();
         if (unlink(PUBLIC_PATH . $params['element']['data-collect'])) {
             View::info('File deleted successfully');

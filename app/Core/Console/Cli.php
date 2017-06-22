@@ -347,7 +347,7 @@ class Cli extends Console
         $words = explode("_", "{$type}_".$argv->get("table"));
         $word = implode("", array_map(function ($word) { return ucfirst($word);}, $words));
         $className = Inflect::singularize($word)."Migration";
-        $fileName = MIGRATIONS_PATH . time() . "_{$className}.php";
+        $fileName = MIGRATIONS_PATH ."/". time() . "_{$className}.php";
         $contents = file_get_contents(CORE_PATH."templates/{$type}_table.inc");
         $output = $this->getUpdatedTemplate($contents, $className, $argv->get("table"));
 

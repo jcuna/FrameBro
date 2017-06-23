@@ -234,7 +234,7 @@ class App {
         if ((! is_string($handler) && ! is_object($handler)) ||
             (is_object($handler) && ! $handler instanceof $instance) ||
             (is_string($handler) && ! class_exists($handler) || ! in_array(
-                $instance, class_implements($handler)))) {
+                    $instance, class_implements($handler)))) {
             $debug = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
             throw new AppException(
                 "Handler type must be a class or an object and must implement ".$instance,
@@ -408,7 +408,10 @@ class App {
             $pointcut = $this->getPointcutName("before", $method);
             /** @var BeforeAdvise $filter */
             foreach ($route->getFilters("before") as $filter) {
-                $filter->handler(self::getRequest());
+                $output = $filter->handler(self::getRequest());
+                if (! is_null($output)) {
+                    call_user_func([$this->responseHandler, "render"], $output);
+                }
                 if ($pointcut !== "" && method_exists($filter, $pointcut)) {
                     call_user_func_array([$filter, $pointcut], [self::getRequest()]);
                 }
@@ -420,7 +423,10 @@ class App {
             /** @var AfterAdvise $filter */
             $pointcut = $this->getPointcutName("after", $method);
             foreach ($route->getFilters("after") as $filter) {
-                $filter->exitHandler($output, self::getRequest());
+                $output = $filter->exitHandler($output, self::getRequest());
+                if (! is_null($output)) {
+                    call_user_func([$this->responseHandler, "render"], $output);
+                }
                 if ($pointcut !== "" && method_exists($filter, $pointcut)) {
                     call_user_func_array([$filter, $pointcut], [self::getRequest()]);
                 }
@@ -437,7 +443,7 @@ class App {
      */
     private function getPointcutName(string $type, callable $method): string
     {
-        if (isset($method[0])) {
+        if (! $method instanceof Closure && isset($method[0])) {
             $namespace = explode("\\", get_class($method[0]));
             $class = str_replace("Controller", "", array_pop($namespace));
             return "{$type}{$class}{$method[1]}";
